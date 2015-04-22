@@ -21,6 +21,7 @@ PV = {
     viewportCssId: '#paraview-viewport',
     activeColorArrayLocation: '',
     activeColorArrayName: '',
+    serverSessionManagerUrl: '',
     backgroundSetting: {
         id: 0,
         value: [0.9765, 0.9765, 0.9765],
@@ -31,6 +32,15 @@ PV = {
         areDiscreteValues: false,
         labelsAndColors: []
     })
+};
+PV.config = function config(opts, callback) {
+    _.extend(PV, opts);
+    //if (options.viewportCSSId) PV.viewportCssId = options.viewportCSSId;
+    //if (options.backgroundSetting) PV.backgroundSetting = options.backgroundSetting;
+    callback && callback(null, { success: true });
+};
+PV.init = function init(opts, callback) {
+    PV.config(opts, callback);
 };
 PV.removeAllProxies = function removeAllProxies(callback) {
     //    console.log('** Starting removeAllProxiesSyncable()');
@@ -57,7 +67,8 @@ PV._connect = function connect() {
     Session.set('pvwConnected', false);
     var config = {
         // From client/lib/paraview/lib/core/vtkWebAll.js, which is set by Meteor.settings.public.paraview.sessionManagerURL
-        sessionManagerURL: Meteor.settings['public']['paraview']['sessionManagerUrl'],
+        sessionManagerURL: PV.serverSessionManagerUrl,
+        //sessionManagerURL: Meteor.settings['public']['paraview']['sessionManagerUrl'],
         //        sessionURL: vtkWeb.properties.sessionURL,  // Don't use so that sessionManagerURL is used
         application: "pipeline"
     };
@@ -114,7 +125,8 @@ PV.initSession = function initSession(callback) {
                 //                console.log('Completed initializeSyncable(), PV.session._wsuri = ' + PV.session._wsuri + ',  PV.session._session_id = ' + PV.session._session_id + ',  PV.session._websocket_connected = ' + PV.session._websocket_connected);
                 console.log('Created session with ParaView server, PV.session._id = ' + PV.session._id + ',  PV.session._socket.url = ' + PV.session._socket.url + ',  PV.session._socket.readyState = ' + PV.session._socket.readyState);
                 //console.log('PV.session = ' + JSON.stringify(PV.session, null, 4));
-                callback && callback(null, { success: true });
+                PV._saveServerProxyInfo(callback);
+                //callback && callback(null, {success: true});
                 connectionComputation.stop();
             }
         });
@@ -122,7 +134,7 @@ PV.initSession = function initSession(callback) {
     else {
         console.log('Already connected to ParaView Server, reusing session');
         PV._bindViewport();
-        callback && callback(null, { success: true });
+        PV._saveServerProxyInfo(callback);
     }
 };
 PV._onError = function _onError(error) {
@@ -145,20 +157,6 @@ PV._onError = function _onError(error) {
 //    PV._stopComputations();
 //    callback && callback(null, {success: true});
 //};
-PV.config = function config(options, callback) {
-    if (options.viewportCSSId)
-        PV.viewportCssId = options.viewportCSSId;
-    if (options.backgroundSetting)
-        PV.backgroundSetting = options.backgroundSetting;
-    callback && callback(null, { success: true });
-};
-PV.init = function init(options, callback) {
-    if (options.viewportCSSId)
-        PV.viewportCssId = options.viewportCSSId;
-    if (options.backgroundSetting)
-        PV.backgroundSetting = options.backgroundSetting;
-    callback && callback(null, { success: true });
-};
 // Given an array of proxies, return the proxy with the given proxyId
 PV._getProxy = function _getProxy(proxies, proxyId) {
     var proxy = _.find(proxies, function (proxy) {
@@ -270,9 +268,17 @@ PV.addFilter = function addFilter(filterName, settings, callback) {
         PV.activeRepId = filterInfo.rep;
         //PV.nextFilterIndex++;
         //PV._updateServerProxySettings(callback);
+        PV._saveServerProxyInfo();
         PV.modifyFilter(filterInfo.id, settings, callback);
         //callback && callback(null, {success: true});
     });
+};
+PV._getFilterProperty = function getFilterProperty(propertyName) {
+    //    console.log('** Starting getFilterProperty(), propertyName = ' + propertyName);
+    var filterProperty = _.find(PV.filterProperties[PV.activeSourceId], function (property) {
+        return property.name === propertyName;
+    });
+    return filterProperty;
 };
 // A single filter setting looks like the following:
 //{
@@ -281,18 +287,18 @@ PV.addFilter = function addFilter(filterName, settings, callback) {
 //    "name": "ScaleFactor"
 //},
 PV.modifyFilter = function modifyFilter(filterId, filterSettings, callback) {
-    var settings = filterSettings || [];
+    var settings = filterSettings || {};
     //console.log('** Starting modifyFilter(), filter settings = ' + JSON.stringify(settings));
     // TODO:  change this to use a map or something more efficient
     _.each(settings, function (settingValue, settingKey) {
         // first look in filterSettings returned from server
         var proxySetting = {
-            id: filterId,
+            id: 0,
             name: settingKey,
             value: settingValue
         };
-        //var property = PV.getFilterProperty(settingKey);
-        //proxySetting.id = property ? property.id : PV.activeSourceId;
+        var property = PV._getFilterProperty(settingKey);
+        proxySetting.id = property ? property.id : PV.activeSourceId;
         //if (proxySetting.name === 'GlyphSphereRadius') {
         //    proxySetting.id = PV.filterUI[PV.activeSourceId][0].values.Sphere;
         //    proxySetting.name = 'Radius';
@@ -303,7 +309,7 @@ PV.modifyFilter = function modifyFilter(filterId, filterSettings, callback) {
     Meteor.setTimeout(function () {
         PV._updateServerProxySettings(callback);
         //callback && callback(null, {success: true});
-    }, 200);
+    }, 400);
 };
 PV._updateServerProxySettings = function _updateServerProxySettings(callback) {
     //console.log('** Starting updateServerProxySettings(), PV.proxySettings = ' + JSON.stringify(PV.proxySettings, null, 4));
@@ -312,6 +318,72 @@ PV._updateServerProxySettings = function _updateServerProxySettings(callback) {
     PV.session.call('pv.proxy.manager.update', [PV.proxySettings]).then(function (result) {
         callback && callback(null, { success: true });
     }, callback);
+};
+PV._findLeafProxy = function _findLeafProxy(proxyId) {
+    //    console.log('findLeafProxy(), proxyId = ' + proxyId);
+    var proxyInfo = _.find(PV.proxies, function (proxy) {
+        return proxy.parent === proxyId;
+    });
+    // if child found, first try to return another child if found and otherwise return the current child
+    if (proxyInfo)
+        return proxyInfo || PV._findLeafProxy(proxyInfo.id);
+    // only reaches here for case of no children found
+    proxyInfo = _.find(PV.proxies, function (proxy) {
+        return proxy.id === proxyId;
+    });
+    return proxyInfo;
+};
+PV._filePathToLeafProxy = function _filePathToLeafProxy(filePath) {
+    var proxyId = PV.fileProxyIdMap[filePath];
+    if (!proxyId) {
+        console.log('Could not find filePath: ' + filePath);
+        return null;
+    }
+    return PV._findLeafProxy(proxyId);
+};
+PV.setProxyVisibility = function (visibilityOpts, callback) {
+    PV.session.call('pv.proxy.manager.update', [[visibilityOpts]]).then(function (result) {
+        //        console.log("Just updated, result = " + JSON.stringify(result));
+        PV._saveServerProxyInfo(callback);
+    }, callback);
+};
+PV.showProxy = function (proxyRepId, callback) {
+    //    console.log('** Starting showProxyNow()');
+    var visibilityOpts = {
+        id: proxyRepId,
+        name: 'Visibility',
+        value: 1
+    };
+    PV.setProxyVisibility(visibilityOpts, callback);
+};
+PV.showProxyByFilePath = function (filePath, callback) {
+    var leafProxy = PV._filePathToLeafProxy(filePath);
+    //    console.log('showProxyByFilePath(), leafProxy = ' + JSON.stringify(leafProxy));
+    PV.showProxy(leafProxy.rep, callback);
+};
+PV.hideProxy = function (proxyRepId, callback) {
+    //    console.log('** Starting hideProxyNow()');
+    var visibilityOpts = {
+        id: proxyRepId,
+        name: 'Visibility',
+        value: 0
+    };
+    PV.setProxyVisibility(visibilityOpts, callback);
+};
+PV.hideProxyByFilePath = function (filePath, callback) {
+    var leafProxy = PV._filePathToLeafProxy(filePath);
+    //    console.log('hideProxyByFilePath(), leafProxy = ' + JSON.stringify(leafProxy));
+    PV.hideProxy(leafProxy.rep, callback);
+};
+PV.hide = function (callback) {
+    //console.log('** Starting hide(), PV.activeRepId = ' + PV.activeRepId);
+    var proxySetting = {
+        id: PV.activeRepId,
+        name: 'Visibility',
+        value: 0
+    };
+    PV.proxySettings.push(proxySetting);
+    PV._updateServerProxySettings(callback);
 };
 PV.printServerProxies = function printServerProxies() {
     PV.session.call('pv.proxy.manager.list').then(function (result) {
