@@ -221,7 +221,11 @@ PV.render = function render(width, height, callback) {
 };
 PV.resetViewport = function resetViewport(callback) {
     //console.log('** Starting resetViewPort(), PV.activeViewId = ' + PV.activeViewId);
-    Session.get('graphicsViewportSize'); // sole purpose of this line is to enable this function to be reactive if wrapped in a Deps.autorun, so a viewport size change will trigger this function again.
+    if (!PV.session) {
+        callback && callback(null, { success: true });
+        return;
+    }
+    //Session.get('graphicsViewportSize');  // sole purpose of this line is to enable this function to be reactive if wrapped in a Deps.autorun, so a viewport size change will trigger this function again.
     PV.session.call("viewport.camera.reset", [PV.activeViewId]).then(function (result) {
         //        console.log('viewport.camera.reset result = ' + JSON.stringify(result));
         PV.render(null, null, callback);
@@ -237,6 +241,10 @@ PV.colorProxy = function colorProxy(displayProps, callback) {
 };
 PV.colorCells = function colorCells(layerName, callback) {
     PV.colorProxy([PV.activeRepId, 'ARRAY', 'CELLS', layerName], callback);
+};
+PV.colorPoints = function (layerName, callback) {
+    var displayProps = [PV.activeRepId, 'ARRAY', 'POINTS', layerName, 'Magnitude', 0, true];
+    PV.colorProxy(displayProps, callback);
 };
 PV.setPalette = function setPalette(paletteName, callback) {
     //console.log('setPalatteSyncable(), calling pv.color.manager.select.preset with param = ' + JSON.stringify(paletteOptions));
@@ -384,6 +392,126 @@ PV.hide = function (callback) {
     };
     PV.proxySettings.push(proxySetting);
     PV._updateServerProxySettings(callback);
+};
+PV.changeRepresentation = function changeRepresentation(representationName, callback) {
+    //    console.log('** Starting updateRepresentation');
+    var settings = {
+        id: PV.activeRepId,
+        name: "Representation",
+        value: representationName
+    };
+    PV.proxySettings.push(settings);
+    PV._updateServerProxySettings(callback);
+};
+PV.scalarBar = new ReactiveVar({
+    display: false,
+    areDiscreteValues: false,
+    labelsAndColors: []
+});
+//PV.setScalarBar = function(opts, callback?: iPVCallback) {
+////    console.log('** Starting setScalarBarSyncable, visibilityMap = ' + JSON.stringify(options.visibilityMap));
+//    PV.session.call('pv.color.manager.scalarbar.visibility.set', [options.visibilityMap]).then(function(result) {
+//        if (!options.noCallback) callback && callback(null, {success: true});  // Doesn't seem like this needs to block, but bad if a new layer became last layer before completion
+//    }, callback);
+//};
+//
+//PV.removeScalarBar = function(sourceId, callback?: iPVCallback) {
+//    var scalarBarOptions = {
+//        visibilityMap: {}
+//    };
+//    scalarBarOptions.visibilityMap[sourceId] = false;
+//    PV.setScalarBar(scalarBarOptions, callback);
+//};
+//
+//PV.removeAllScalarBars = function(callback?: iPVCallback) {
+////    console.log('** Starting removeAllScalarBarsSyncable()');
+//    if (!PV.proxies || PV.proxies.length === 0) return callback && callback(null, {success: true});
+//    _.each(PV.proxies, function(proxy, i) {
+//        var scalarBarOptions = {
+//            visibilityMap: {}
+//        };
+//        scalarBarOptions.visibilityMap[proxy.id] = false;
+//        if (i !== PV.proxies.length - 1) scalarBarOptions.noCallback = true;
+//        PV.setScalarBar(scalarBarOptions, callback);
+//    });
+//};
+// options.vcrAction can be 'first', 'prev', 'next' or 'last'
+PV.alterVideo = function alterVideo(vcrOptions, callback) {
+    //    console.log('ShowFrameSyncable, calling pv.vcr.action with param = ' + JSON.stringify(vcrOptions));
+    PV.session.call('pv.vcr.action', vcrOptions).then(function (timeValue) {
+        //        console.log('pv.vcr.action success, set timeValue result = ' + timeValue);
+        callback && callback(null, { success: true, lastFrameTime: timeValue });
+    }, callback);
+};
+PV.showFirstFrame = function showFirstFrame(callback) {
+    //    console.log('** Starting showLastFrameSyncable');
+    PV.alterVideo(['first'], callback);
+};
+PV.showLastFrame = function showLastFrame(callback) {
+    //    console.log('** Starting showLastFrameSyncable');
+    PV.alterVideo(['last'], callback);
+};
+PV.playStopEnd = function playStopEnd(callback) {
+    //    console.log('** Starting playStopEndSyncable()');
+    callback && callback(null, { success: true }); // Should not block
+    PV.paused = false;
+    PV.showLastFrame(function (error, result) {
+        var lastFrameTime = result.lastFrameTime;
+        console.log('lastFrameTime = ' + lastFrameTime);
+        PV.showFirstFrame(function (error, result) {
+            var runAnimationLoop = function () {
+                PV.session.call('pv.vcr.action', ['next']).then(function (timeValue) {
+                    Session.set('sim.movieProgressPercent', Math.ceil(timeValue / lastFrameTime * 100));
+                    if (timeValue === lastFrameTime)
+                        PV.paused = true;
+                    PV.viewport.invalidateScene();
+                    if (!PV.paused) {
+                        setTimeout(runAnimationLoop, 25);
+                    }
+                });
+            };
+            Meteor.setTimeout(runAnimationLoop, 10);
+        });
+    });
+};
+PV.playRepeat = function playRepeat(callback) {
+    //    console.log('** Starting playSyncable()');
+    callback && callback(null, { success: true }); // Should not block
+    PV.paused = false;
+    PV.showLastFrame(function (error, result) {
+        var lastFrameTime = result.lastFrameTime;
+        console.log('lastFrameTime = ' + lastFrameTime);
+        PV.showFirstFrame(function (error, result) {
+            var runAnimationLoop = function () {
+                PV.session.call('pv.vcr.action', ['next']).then(function (timeValue) {
+                    Session.set('sim.movieProgressPercent', Math.ceil(timeValue / lastFrameTime * 100));
+                    PV.viewport.invalidateScene();
+                    if (!PV.paused) {
+                        setTimeout(runAnimationLoop, 25);
+                    }
+                });
+            };
+            Meteor.setTimeout(runAnimationLoop, 10);
+        });
+    });
+};
+PV.rescale = function rescale(callback) {
+    //    console.log('PVW.rescaleSyncable(), calling pv.color.manager.rescale.transfer.function with param = ' + JSON.stringify([{proxyId: PVW.activeSourceId, type:"data"}]));
+    PV.session.call('pv.color.manager.rescale.transfer.function', [{ proxyId: PV.activeSourceId, type: "data" }]).then(function (result) {
+        //        console.log('pv.color.manager.rescale.transfer.function success, set result = ' + JSON.stringify(result));
+        callback && callback(null, { success: true });
+    }, callback);
+};
+PV.updateCamera = function (opts, callback) {
+    //console.log('updateCamera, opts = ' + JSON.stringify([Number(PVW.activeViewId), opts.focalPoint, opts.viewUp, opts.camPosition]));
+    if (!PV.session) {
+        callback && callback(null, { success: true });
+        return;
+    }
+    PV.session.call('viewport.camera.update', [Number(PV.activeViewId), opts.focalPoint, opts.viewUp, opts.camPosition]).then(function (result) {
+        //console.log('result = ' + JSON.stringify(result));
+        PV.render(null, null, callback);
+    });
 };
 PV.printServerProxies = function printServerProxies() {
     PV.session.call('pv.proxy.manager.list').then(function (result) {
