@@ -27,7 +27,7 @@ PV = {
         value: [0.9765, 0.9765, 0.9765],
         name: "Background"
     },
-    scalarbar: new ReactiveVar({
+    scalarBar: new ReactiveVar({
         display: false,
         areDiscreteValues: false,
         labelsAndColors: []
@@ -307,10 +307,10 @@ PV.modifyFilter = function modifyFilter(filterId, filterSettings, callback) {
         };
         var property = PV._getFilterProperty(settingKey);
         proxySetting.id = property ? property.id : PV.activeSourceId;
-        //if (proxySetting.name === 'GlyphSphereRadius') {
-        //    proxySetting.id = PV.filterUI[PV.activeSourceId][0].values.Sphere;
-        //    proxySetting.name = 'Radius';
-        //}
+        if (proxySetting.name === 'GlyphSphereRadius') {
+            proxySetting.id = PV.filterUI[PV.activeSourceId][0].values.Sphere;
+            proxySetting.name = 'Radius';
+        }
         //console.log('Filter proxySetting = ' + JSON.stringify(proxySetting, null, 4));
         PV.proxySettings.push(proxySetting);
     });
@@ -349,20 +349,25 @@ PV._filePathToLeafProxy = function _filePathToLeafProxy(filePath) {
     }
     return PV._findLeafProxy(proxyId);
 };
-PV.setProxyVisibility = function (visibilityOpts, callback) {
-    PV.session.call('pv.proxy.manager.update', [[visibilityOpts]]).then(function (result) {
-        //        console.log("Just updated, result = " + JSON.stringify(result));
-        PV._saveServerProxyInfo(callback);
-    }, callback);
+//PV.setProxyVisibility = function(visibilityOpts: iPVVisibilityOpts, callback: iPVCallback) {
+//    PV.session.call('pv.proxy.manager.update', [[visibilityOpts]]).then(function(result) {
+////        console.log("Just updated, result = " + JSON.stringify(result));
+//        PV._saveServerProxyInfo(callback);
+//    }, callback);
+//};
+PV.setProxyVisibility = function (proxyRepId, isVisible, callback) {
+    var proxySetting = {
+        id: proxyRepId || PV.activeRepId,
+        name: 'Visibility',
+        value: Number(isVisible)
+    };
+    //console.log('setProxyVisibility, proxySetting = ' + JSON.stringify(proxySetting, null, 4));
+    PV.proxySettings.push(proxySetting);
+    PV._updateServerProxySettings(callback);
 };
 PV.showProxy = function (proxyRepId, callback) {
     //    console.log('** Starting showProxyNow()');
-    var visibilityOpts = {
-        id: proxyRepId,
-        name: 'Visibility',
-        value: 1
-    };
-    PV.setProxyVisibility(visibilityOpts, callback);
+    PV.setProxyVisibility(proxyRepId, true, callback);
 };
 PV.showProxyByFilePath = function (filePath, callback) {
     var leafProxy = PV._filePathToLeafProxy(filePath);
@@ -370,28 +375,17 @@ PV.showProxyByFilePath = function (filePath, callback) {
     PV.showProxy(leafProxy.rep, callback);
 };
 PV.hideProxy = function (proxyRepId, callback) {
-    //    console.log('** Starting hideProxyNow()');
-    var visibilityOpts = {
-        id: proxyRepId,
-        name: 'Visibility',
-        value: 0
-    };
-    PV.setProxyVisibility(visibilityOpts, callback);
+    //    console.log('** Starting hideProxy()');
+    PV.setProxyVisibility(proxyRepId, false, callback);
 };
 PV.hideProxyByFilePath = function (filePath, callback) {
     var leafProxy = PV._filePathToLeafProxy(filePath);
-    //    console.log('hideProxyByFilePath(), leafProxy = ' + JSON.stringify(leafProxy));
+    //console.log('hideProxyByFilePath(), leafProxy = ' + JSON.stringify(leafProxy));
     PV.hideProxy(leafProxy.rep, callback);
 };
 PV.hide = function (callback) {
     //console.log('** Starting hide(), PV.activeRepId = ' + PV.activeRepId);
-    var proxySetting = {
-        id: PV.activeRepId,
-        name: 'Visibility',
-        value: 0
-    };
-    PV.proxySettings.push(proxySetting);
-    PV._updateServerProxySettings(callback);
+    PV.hideProxy(PV.activeRepId, callback);
 };
 PV.changeRepresentation = function changeRepresentation(representationName, callback) {
     //    console.log('** Starting updateRepresentation');
