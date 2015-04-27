@@ -33,12 +33,21 @@ PV = {
         labelsAndColors: []
     })
 };
+/**
+ * Set initial configurations for paraview, such as viewportCssId or backgroundSetting
+ *
+ * @param {Object} opts - configuration options
+ * @param {requestCallback} callback -- callback to be executed upon completion, with signature function(error: Object, success: Object) { ... }
+ */
 PV.config = function config(opts, callback) {
     _.extend(PV, opts);
-    //if (options.viewportCSSId) PV.viewportCssId = options.viewportCSSId;
-    //if (options.backgroundSetting) PV.backgroundSetting = options.backgroundSetting;
     callback && callback(null, { success: true });
 };
+/**
+ *
+ * @param {Object} opts - configuration options
+ * @param {requestCallback} callback -- callback to be executed upon completion, with signature function(error: Object, success: Object) { ... }
+ */
 PV.init = function init(opts, callback) {
     PV.config(opts, callback);
 };
@@ -140,23 +149,6 @@ PV.initSession = function initSession(callback) {
 PV._onError = function _onError(error) {
     console.log('Error: ' + JSON.stringify(error));
 };
-//
-//PV._stopComputations = function () {
-//    _.each(PV.computations, function (computation:Tracker.Computation) {
-//        computation.stop();
-//    });
-//};
-//PV._completeRendering = function _completeRendering(callback) {
-//    PV.resetViewport();
-//
-//    Meteor.setTimeout(function () {
-//        PV.removeCover();
-//    }, 1500);
-//    //Session.set(options.doneSessionVar, true);
-//    //Session.set('lastRendered', options.doneSessionVar);
-//    PV._stopComputations();
-//    callback && callback(null, {success: true});
-//};
 // Given an array of proxies, return the proxy with the given proxyId
 PV._getProxy = function _getProxy(proxies, proxyId) {
     var proxy = _.find(proxies, function (proxy) {
@@ -349,12 +341,6 @@ PV._filePathToLeafProxy = function _filePathToLeafProxy(filePath) {
     }
     return PV._findLeafProxy(proxyId);
 };
-//PV.setProxyVisibility = function(visibilityOpts: iPVVisibilityOpts, callback: iPVCallback) {
-//    PV.session.call('pv.proxy.manager.update', [[visibilityOpts]]).then(function(result) {
-////        console.log("Just updated, result = " + JSON.stringify(result));
-//        PV._saveServerProxyInfo(callback);
-//    }, callback);
-//};
 PV.setProxyVisibility = function (proxyRepId, isVisible, callback) {
     var proxySetting = {
         id: proxyRepId || PV.activeRepId,
