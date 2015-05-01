@@ -24,6 +24,7 @@ PV = {
     activeColorArrayLocation: '',
     activeColorArrayName: '',
     serverSessionManagerUrl: '',
+    serverSessionUrl: '',
     backgroundSetting: {
         id: 0,
         value: [0.9765, 0.9765, 0.9765],  // Equivalent to RGB color #f9f9f9
@@ -35,6 +36,10 @@ PV = {
         labelsAndColors: []
     })
 };
+
+/**
+ *  @module PV
+ */
 
 /**
  *
@@ -80,10 +85,6 @@ PV.scalarBar = new ReactiveVar<iPVScalarBarOpts>({
  * @callback requestCallback
  * @param {Object} error -- null (or undefined) if no error, an error object if there is an error
  * @param {Object} success -- undefined if error, some success object if method completes successfully
- */
-
-/**
- *  @module PV
  */
 
 /**
@@ -565,7 +566,7 @@ PV.hideProxyByFilePath = function(filePath: string, asyncCallback?: iPVCallback)
  *
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
-PV.hide = function(asyncCallback?: iPVCallback) {
+PV.hide = function hide(asyncCallback?: iPVCallback) {
     //console.log('** Starting hide(), PV.activeRepId = ' + PV.activeRepId);
     PV.hideProxy(PV.activeRepId, asyncCallback);
 };
@@ -703,10 +704,20 @@ PV.updateCamera = function(opts: iPVCameraOpts, asyncCallback?: iPVCallback) {
     });
 };
 
-
+PV.setOrientationAxesVisibility = function setOrientationAxesVisibility(isVisible: boolean, asyncCallback?: iPVCallback) {
+    //console.log('setOrientationAxesVisibility()');
+    var proxySetting = {
+        id: PV.activeViewId,
+        value: Number(isVisible),
+        name: "OrientationAxesVisibility"
+    };
+    PV.session.call('pv.proxy.manager.update', [[proxySetting]]).then(function(result) {
+        PV.viewport.invalidateScene();
+    });
+};
 
 /**
- *
+ * Print all proxies on the server for debugging
  */
 PV.printServerProxies = function printServerProxies() {
     PV.session.call('pv.proxy.manager.list').then(function (result) {

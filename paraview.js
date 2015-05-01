@@ -22,6 +22,7 @@ PV = {
     activeColorArrayLocation: '',
     activeColorArrayName: '',
     serverSessionManagerUrl: '',
+    serverSessionUrl: '',
     backgroundSetting: {
         id: 0,
         value: [0.9765, 0.9765, 0.9765],
@@ -33,6 +34,9 @@ PV = {
         labelsAndColors: []
     })
 };
+/**
+ *  @module PV
+ */
 /**
  *
  * @type {ReactiveVar<ScalarBarOpts>} scalarBar - A custom scalar bar that is the key for any coloring in the visualization
@@ -75,9 +79,6 @@ PV.scalarBar = new ReactiveVar({
  * @callback requestCallback
  * @param {Object} error -- null (or undefined) if no error, an error object if there is an error
  * @param {Object} success -- undefined if error, some success object if method completes successfully
- */
-/**
- *  @module PV
  */
 /**
  * Set initial configurations for paraview, such as viewportCssId or backgroundSetting.
@@ -518,7 +519,7 @@ PV.hideProxyByFilePath = function (filePath, asyncCallback) {
  *
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
-PV.hide = function (asyncCallback) {
+PV.hide = function hide(asyncCallback) {
     //console.log('** Starting hide(), PV.activeRepId = ' + PV.activeRepId);
     PV.hideProxy(PV.activeRepId, asyncCallback);
 };
@@ -645,8 +646,19 @@ PV.updateCamera = function (opts, asyncCallback) {
         PV.render(null, null, asyncCallback);
     });
 };
+PV.setOrientationAxesVisibility = function setOrientationAxesVisibility(isVisible, asyncCallback) {
+    //console.log('setOrientationAxesVisibility()');
+    var proxySetting = {
+        id: PV.activeViewId,
+        value: Number(isVisible),
+        name: "OrientationAxesVisibility"
+    };
+    PV.session.call('pv.proxy.manager.update', [[proxySetting]]).then(function (result) {
+        PV.viewport.invalidateScene();
+    });
+};
 /**
- *
+ * Print all proxies on the server for debugging
  */
 PV.printServerProxies = function printServerProxies() {
     PV.session.call('pv.proxy.manager.list').then(function (result) {
