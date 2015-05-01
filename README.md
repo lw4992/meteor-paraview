@@ -1,5 +1,5 @@
 ## ParaView
-[ParaView](http://www.paraview.org/) is a is an open-source, multi-platform data analysis and visualization application.  This package provides a user-friendly wrapper for the (poorly documented) [ParaViewWeb JavaScript API](http://www.paraview.org/ParaView3/Doc/Nightly/www/js-doc/index.html#!/api).
+[ParaView](http://www.paraview.org/) is a is an open-source, multi-platform data analysis and visualization application.  This package provides a user-friendly wrapper for the [ParaViewWeb JavaScript API](http://www.paraview.org/ParaView3/Doc/Nightly/www/js-doc/index.html#!/api).
 
 It enables rendering and manipulation of visualizations that are in file formats supported by ParaView.  You basically:
 

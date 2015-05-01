@@ -9,7 +9,7 @@ PV = {
     currentFrameTime: 0,
     filterProperties: {},
     filterUI: {},
-    proxies: [],
+    proxies: new ReactiveVar([]),
     proxySettings: [],
     lastMTime: 0,
     activeViewId: -1,
@@ -105,16 +105,16 @@ PV.config = function config(opts, asyncCallback) {
  */
 PV.removeAllProxies = function removeAllProxies(asyncCallback) {
     //    console.log('** Starting removeAllProxiesSyncable()');
-    var numProxies = PV.proxies.length;
+    var numProxies = PV.proxies.get().length;
     if (numProxies === 0)
         asyncCallback(null, { success: true });
     var i = numProxies;
     while (i--) {
         if (i === 0) {
-            PV.removeProxy(JSON.parse(JSON.stringify(PV.proxies[i].id)), asyncCallback);
+            PV.removeProxy(JSON.parse(JSON.stringify(PV.proxies.get()[i].id)), asyncCallback);
         }
         else {
-            PV.removeProxy(JSON.parse(JSON.stringify(PV.proxies[i].id)), asyncCallback);
+            PV.removeProxy(JSON.parse(JSON.stringify(PV.proxies.get()[i].id)), asyncCallback);
         }
     }
 };
@@ -233,11 +233,12 @@ PV._saveServerProxyInfo = function _saveServerProxyInfo(asyncCallback) {
         if (result && result.sources && result.sources.length !== 0) {
             PV.activeSourceId = PV.activeSourceId || result.sources[result.sources.length - 1].id; // If calling for first time, make last proxy the active one
             PV.activeRepId = PV._getRepId(result.sources, PV.activeSourceId);
-            PV.proxies = _.sortBy(result.sources, function (proxy) {
+            var proxies = _.sortBy(result.sources, function (proxy) {
                 return proxy.id;
             });
+            PV.proxies.set(proxies);
         }
-        //        console.log('PV.proxies = ' + JSON.stringify(PV.proxies));
+        //        console.log('PV.proxies.get() = ' + JSON.stringify(PV.proxies.get()));
         asyncCallback && asyncCallback(null, { success: true });
     }, asyncCallback);
 };
@@ -436,19 +437,20 @@ PV._updateServerProxySettings = function _updateServerProxySettings(asyncCallbac
     PV.backgroundSetting.id = PV.activeViewId;
     PV.proxySettings.push(PV.backgroundSetting);
     PV.session.call('pv.proxy.manager.update', [PV.proxySettings]).then(function (result) {
+        PV.viewport.invalidateScene();
         asyncCallback && asyncCallback(null, { success: true });
     }, asyncCallback);
 };
 PV._findLeafProxy = function _findLeafProxy(proxyId) {
     //    console.log('findLeafProxy(), proxyId = ' + proxyId);
-    var proxyInfo = _.find(PV.proxies, function (proxy) {
+    var proxyInfo = _.find(PV.proxies.get(), function (proxy) {
         return proxy.parent === proxyId;
     });
     // if child found, first try to return another child if found and otherwise return the current child
     if (proxyInfo)
         return proxyInfo || PV._findLeafProxy(proxyInfo.id);
     // only reaches here for case of no children found
-    proxyInfo = _.find(PV.proxies, function (proxy) {
+    proxyInfo = _.find(PV.proxies.get(), function (proxy) {
         return proxy.id === proxyId;
     });
     return proxyInfo;
@@ -473,7 +475,7 @@ PV.setProxyVisibility = function (proxyRepId, isVisible, asyncCallback) {
         name: 'Visibility',
         value: Number(isVisible)
     };
-    //console.log('setProxyVisibility, proxySetting = ' + JSON.stringify(proxySetting, null, 4));
+    //console.log('setProxyVisibility(), proxySetting = ' + JSON.stringify(proxySetting, null, 4));
     PV.proxySettings.push(proxySetting);
     PV._updateServerProxySettings(asyncCallback);
 };
