@@ -1,6 +1,6 @@
 Package.describe({
     name: 'fullflavedave:paraview',
-    version: '0.0.4',
+    version: '0.0.5',
     summary: 'A user-friendly wrapper for the ParaViewWeb JavaScript API',
     git: 'https://github.com/fullflavedave/meteor-paraview.git',
     documentation: 'README.md'
@@ -8,18 +8,25 @@ Package.describe({
 
 Package.onUse(function (api) {
     api.versionsFrom('1.1.0.2');
+    api.use('templating', 'client');
     api.use('jquery', 'client');
     api.use('reactive-var', 'client');
+    api.use('rcy:nouislider', 'client');
 
     api.addFiles('paraview.js', 'client');
-    api.export(['PV'], 'client');
 
     api.addFiles('lib/gl-matrix-min.js', 'client');
     api.addFiles('lib/hammer.min.js', 'client');
     api.addFiles('lib/jquery.hammer.min.js', 'client');
     api.addFiles('lib/autobahn.min.js', 'client');
     api.addFiles('lib/vtkweb-all.js', 'client');
+
     api.export(['vtkWeb'], 'client');
+    api.export(['PV'], 'client');
+
+    api.addFiles('templates/control_panel/paraview_control_panel.html', 'client');
+    api.addFiles('templates/control_panel/paraview_control_panel.css', 'client');
+    api.addFiles('templates/control_panel/paraview_control_panel.js', 'client');
 });
 
 Package.onTest(function (api) {

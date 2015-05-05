@@ -1,0 +1,99 @@
+<template name="paraviewControlPanel">
+    <div id="paraview-control-panel">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                Controls
+                <a href="#vis-controls" class="pv-expander-collapser" style="display: none"><b class="caret"></b></a>
+                <a href="#vis-controls" class="pv-expander-collapser"><b class="caret"></b></a>
+            </div>
+            <div id="vis-controls" class="panel-body" hidden>
+
+                <section class="first well">
+                    <fieldset>
+                        <legend>
+                            Elements
+                            <a href="#proxy-controls" class="pv-expander-collapser" style="display: none"><b class="caret"></b></a>
+                            <a href="#proxy-controls" class="pv-expander-collapser"><b class="caret"></b></a>
+                        </legend>
+                        <div id="proxy-controls" hidden>
+                            {{#each proxyGroups}}
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                        <div class="parent-proxy">
+                                            <div class="checkbox">
+                                                <label>
+                                                    {{#if $eq parent.visible 1}}
+                                                        <input id="proxyId" data-rep-id="{{parent.rep}}" data-proxy-checkbox type="checkbox"
+                                                               checked> {{parent.name}}
+                                                    {{else}}
+                                                        <input id="proxyId" data-rep-id="{{parent.rep}}" data-proxy-checkbox type="checkbox"> {{parent.name}}
+                                                    {{/if}}
+                                                </label>
+                                            </div>
+
+                                            {{#if $eq parent.visible 1}}
+                                                <div class="slider-group" data-rep-id="{{parent.rep}}">
+                                                    Opacity: <span id="slider-value-{{parent.rep}}"></span>
+
+                                                    <div class="slider-slider">
+                                                        <div id="slider-{{parent.rep}}" data-slider data-rep-id="{{parent.rep}}" class="slider">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {{/if}}
+
+                                        </div>
+                                    </div>
+                                    {{#if $gt children.length 0}}
+                                        <div class="panel-body">
+                                            {{#each children}}
+                                                <div class="child-proxy indent-1">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            {{#if $eq visible 1}}
+                                                                <input id="proxyId" data-rep-id="{{rep}}" data-proxy-checkbox type="checkbox" checked> {{name}}
+                                                            {{else}}
+                                                                <input id="proxyId" data-rep-id="{{rep}}" data-proxy-checkbox type="checkbox"> {{name}}
+                                                            {{/if}}
+                                                        </label>
+                                                    </div>
+                                                    <div class="slider-group" data-rep-id="{{rep}}">
+                                                        Opacity: <span id="slider-value-{{rep}}"></span>
+
+                                                        <div class="slider-slider">
+                                                            <div id="slider-{{rep}}" data-slider data-rep-id="{{rep}}" class="slider">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {{/each}}
+                                        </div>
+                                    {{/if}}
+                                </div>
+                            {{/each}}
+                        </div>
+                    </fieldset>
+
+                </section>
+
+                <section class="well">
+                    <fieldset>
+                        <legend>
+                            Entire visualization
+                            <a href="#entire-vis-controls" class="pv-expander-collapser" style="display: none"><b class="caret"></b></a>
+                            <a href="#entire-vis-controls" class="pv-expander-collapser"><b class="caret"></b></a>
+                        </legend>
+                        <div id="entire-vis-controls">
+                            <div class="checkbox">
+                                <label>
+                                    <input id="orientation-axis-checkbox" type="checkbox" checked> Orientation Axis
+                                </label>
+                            </div>
+                        </div>
+                    </fieldset>
+                </section>
+
+            </div>
+        </div>
+    </div>
+</template>

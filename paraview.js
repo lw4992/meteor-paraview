@@ -10,6 +10,7 @@ PV = {
     filterProperties: {},
     filterUI: {},
     proxies: new ReactiveVar([]),
+    proxyOpacities: {},
     proxySettings: [],
     lastMTime: 0,
     activeViewId: -1,
@@ -251,14 +252,11 @@ PV._saveServerProxyInfo = function _saveServerProxyInfo(asyncCallback) {
 PV.addFile = function addFile(path, asyncCallback) {
     console.log('Starting addFile(), relativeFilePath = ' + path);
     PV.session.call("pv.proxy.manager.create.reader", [path]).then(function (reply) {
-        //console.log('pv.proxy.manager.create.reader() reply = ' + JSON.stringify(reply));
+        console.log('pv.proxy.manager.create.reader() reply = ' + JSON.stringify(reply));
         PV.mainProxyId = reply.id;
         PV.activeSourceId = reply.id;
-        //        PV.nextFileIndex++;
-        //        PV.nextFilterIndex = 0;
         PV.fileProxyIdMap[path] = reply.id;
         PV._saveServerProxyInfo(asyncCallback);
-        //asyncCallback && asyncCallback(null, {success: true});
     }, asyncCallback);
 };
 /**
@@ -354,23 +352,43 @@ PV.setPalette = function setPalette(paletteName, asyncCallback) {
     }, asyncCallback);
 };
 /**
+ * Sets opacity of a specific proxy
  *
+ * @param proxyRepId
+ * @param opacity
+ * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
+ */
+PV.setProxyOpacity = function setOpacity(proxyRepId, opacity, asyncCallback) {
+    //    console.log('** Starting setProxyOpacity()');
+    var settings = {
+        id: proxyRepId,
+        name: "Opacity",
+        value: opacity
+    };
+    PV.proxySettings.push(settings);
+    PV.proxyOpacities[proxyRepId] = opacity;
+    PV._updateServerProxySettings(asyncCallback);
+};
+/**
+ * Sets opacity of last rendered proxy
  *
  * @param opacity
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
 PV.setOpacity = function setOpacity(opacity, asyncCallback) {
     //    console.log('** Starting setOpacity()');
-    var settings = {
-        id: PV.activeRepId,
-        name: "Opacity",
-        value: opacity
-    };
-    PV.proxySettings.push(settings);
-    PV._updateServerProxySettings(asyncCallback);
-    //asyncCallback && asyncCallback(null, {success: true});
+    PV.setProxyOpacity(PV.activeRepId, opacity, asyncCallback);
+    //var settings = {
+    //    id: PV.activeRepId,
+    //    name: "Opacity",
+    //    value: opacity
+    //};
+    //
+    //PV.proxySettings.push(settings);
+    //PV._updateServerProxySettings(asyncCallback);
 };
 /**
+ * Add a filter to last rendered proxy
  *
  * @param filterName
  * @param settings
@@ -385,7 +403,7 @@ PV.addFilter = function addFilter(filterName, settings, asyncCallback) {
         PV.activeSourceId = filterInfo.id;
         PV.activeRepId = filterInfo.rep;
         PV._saveServerProxyInfo();
-        PV.modifyFilter(filterInfo.id, settings, asyncCallback);
+        PV.updateFilter(filterInfo.id, settings, asyncCallback);
     });
 };
 PV._getFilterProperty = function getFilterProperty(propertyName) {
@@ -396,6 +414,7 @@ PV._getFilterProperty = function getFilterProperty(propertyName) {
     return filterProperty;
 };
 /**
+ * Update the properties of a filter
  *
  * @param filterId
  * @param filterSettings
@@ -407,7 +426,7 @@ PV._getFilterProperty = function getFilterProperty(propertyName) {
 //    "value": 500000,
 //    "name": "ScaleFactor"
 //},
-PV.modifyFilter = function modifyFilter(filterId, filterSettings, asyncCallback) {
+PV.updateFilter = function modifyFilter(filterId, filterSettings, asyncCallback) {
     var settings = filterSettings || {};
     //console.log('** Starting modifyFilter(), filter settings = ' + JSON.stringify(settings));
     // TODO:  change this to use a map or something more efficient
@@ -657,6 +676,19 @@ PV.setOrientationAxesVisibility = function setOrientationAxesVisibility(isVisibl
     };
     PV.session.call('pv.proxy.manager.update', [[proxySetting]]).then(function (result) {
         PV.viewport.invalidateScene();
+    });
+};
+PV.getProxyFromServer = function getProxyFromServer(proxyId, asyncCallback) {
+    PV.session.call('pv.proxy.manager.get', [proxyId]).then(function (result) {
+        console.log('Stringified, pv.proxy.manager.get results = ' + JSON.stringify(result, null, 4));
+        asyncCallback && asyncCallback(null, { success: true });
+    });
+};
+PV.getOpacity = function getOpacity(repId, asyncCallback) {
+    PV.session.call('pv.color.manager.surface.opacity.get', [repId]).then(function (result) {
+        console.log('opacity repId = ' + repId);
+        console.log('Stringified, pv.color.manager.surface.opacity results = ' + JSON.stringify(result, null, 4));
+        asyncCallback && asyncCallback(null, { success: true });
     });
 };
 /**

@@ -1,0 +1,109 @@
+/* Painting and performance;
+ * Browsers can paint handles in their own layer.
+ */
+.noUi-base {
+    -webkit-transform: translate3d(0,0,0);
+    transform: translate3d(0,0,0);
+}
+
+/* Slider size and handle placement;
+ */
+.noUi-horizontal {
+    height: 2px;
+}
+.noUi-horizontal .noUi-handle {
+    width: 12px;
+    height: 12px;
+    left: -6px;
+    top: -5px;
+}
+
+/* Styling;
+ */
+.noUi-background {
+    background: #C8C8C8;
+    box-shadow: none;
+}
+.noUi-connect {
+    background: #2196F3;
+    box-shadow: none;
+    -webkit-transition: background 450ms;
+    transition: background 450ms;
+}
+.noUi-origin {
+    border-radius: 2px;
+}
+.noUi-target {
+    border-radius: 4px;
+    border: 1px solid #D3D3D3;
+    border: none;
+    box-shadow: none;
+    box-shadow: none;
+}
+.noUi-target.noUi-connect {
+    box-shadow: none;
+}
+
+/* Handles and cursors;
+ */
+.noUi-dragable {
+    cursor: w-resize;
+}
+.noUi-vertical .noUi-dragable {
+    cursor: n-resize;
+}
+.noUi-handle {
+    border: none;
+    border-radius: 50%;
+    background: #2196F3;
+    cursor: default;
+    box-shadow: none;
+}
+.noUi-horizontal .noUi-handle.noUi-active {
+    width: 20px;
+    height: 20px;
+    left: -10px;
+    top: -9px;
+    box-shadow: none;
+}
+
+/* Handle stripes;
+ */
+.noUi-handle:before,
+.noUi-handle:after {
+    content: "";
+    display: none;
+    position: absolute;
+    height: 0px;
+    width: 0px;
+    background: none;
+    left: 0px;
+    top: 0px;
+}
+.noUi-handle:after {
+    left: 0px;
+}
+
+.slider-group {
+    width: 200px;
+}
+.slider-slider {
+    width: 100px;
+    margin-left: 15px;
+    display: inline-block;
+    position: relative;
+    top: -3px;
+}
+
+#paraview-control-panel {
+    display: inline-block;
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 10;
+}
+.pv-expander-collapser {
+    display: inline-block;
+    width: 10px;
+    margin-right: 10px;
+}

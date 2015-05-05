@@ -1,3 +1,6 @@
+## Under Development
+Disclaimer:  this package is currently under heavy development and undoubtedly contains many bugs.
+
 ## ParaView
 [ParaView](http://www.paraview.org/) is a is an open-source, multi-platform data analysis and visualization application.  This package provides a user-friendly wrapper for the [ParaViewWeb JavaScript API](http://www.paraview.org/ParaView3/Doc/Nightly/www/js-doc/index.html#!/api).
 
@@ -358,10 +361,20 @@ To avoid callback hell, it's recommended that you use some sort of aysnchronous 
         }
     };
     
+### Templates
+
+#### paraviewControlPanel
+This template lists different files and filters added, enables you to show/hide each one or change each one's opacity.  It is implemented within a bootstrap panel that is as wide as it's containing element.
+
+You can include the control panel in templates with this spacebars snippet:
     
+    {{> paraviewControlPanel}}
+
+It hasn't yet been created in a way that is easy to customize the style.
+
  
 ## Future Plans
-- Customizable UI components that provide out-of-the box functionality
+- More UI components that provide out-of-the box functionality
 
 
 ## Contributions
