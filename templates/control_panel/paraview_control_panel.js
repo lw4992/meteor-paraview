@@ -7,7 +7,7 @@
 // ]
 var proxiesComputation;
 var createProxyGroups = function createProxyGroups(proxies) {
-    //console.log('Stringified, proxies = ' + JSON.stringify(proxies, null, 4));
+    //console.log('Stringified, elements = ' + JSON.stringify(elements, null, 4));
     var proxyGroups = [];
     proxies.forEach(function (proxy1) {
         if (proxy1.parent === '0') {
@@ -28,10 +28,10 @@ var createProxyGroups = function createProxyGroups(proxies) {
 };
 Template['paraviewControlPanel'].helpers({
     proxies: function () {
-        return PV.proxies.get();
+        return PV.elements.get();
     },
     proxyGroups: function () {
-        var proxies = PV.proxies.get();
+        var proxies = PV.elements.get();
         return createProxyGroups(proxies);
     }
 });
@@ -39,16 +39,16 @@ Template['paraviewControlPanel']['events']({
     'change #orientation-axis-checkbox': function (event, tmpl) {
         //console.log('Checkbox changed');
         if (event.target.checked)
-            PV.setOrientationAxesVisibility(true);
+            PV.updateOrientationAxesVisibility(true);
         else
-            PV.setOrientationAxesVisibility(false);
+            PV.updateOrientationAxesVisibility(false);
     },
     'change [data-proxy-checkbox]': function (event, tmpl) {
         var proxyRepId = $(event.target).data('rep-id');
         if (event.target.checked)
-            PV.setProxyVisibility(proxyRepId, true);
+            PV.updateElementVisibility(proxyRepId, true);
         else
-            PV.setProxyVisibility(proxyRepId, false);
+            PV.updateElementVisibility(proxyRepId, false);
     },
     'click .pv-expander-collapser': function (event, tmpl) {
         event.preventDefault();
@@ -61,13 +61,13 @@ Template['paraviewControlPanel']['events']({
     'slide .slider': function (event, tmpl) {
         var repId = $(event.target).closest('.slider').data('rep-id');
         var opacity = $('#slider-value-' + repId).text();
-        PV.setProxyOpacity(Number(repId), Number(opacity));
+        PV.updateElementOpacity(Number(repId), Number(opacity));
     }
 });
 Template['paraviewControlPanel'].rendered = function () {
     var addedProxies = [];
     proxiesComputation = Tracker.autorun(function () {
-        PV.proxies.get().forEach(function (proxy) {
+        PV.elements.get().forEach(function (proxy) {
             Meteor.setTimeout(function () {
                 if (addedProxies.indexOf(proxy.rep) > -1) {
                     //console.log('returning!');
@@ -77,7 +77,7 @@ Template['paraviewControlPanel'].rendered = function () {
                 var $slider = $('#slider-' + proxy.rep);
                 if (!$slider.data('rep-id'))
                     return;
-                var opacity = PV.proxyOpacities[proxy.rep];
+                var opacity = PV.elementOpacities[proxy.rep];
                 $('#slider-' + proxy.rep).noUiSlider({
                     start: [opacity || 1],
                     step: .1,

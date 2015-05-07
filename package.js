@@ -1,6 +1,6 @@
 Package.describe({
     name: 'fullflavedave:paraview',
-    version: '0.0.5',
+    version: '0.0.6',
     summary: 'A user-friendly wrapper for the ParaViewWeb JavaScript API',
     git: 'https://github.com/fullflavedave/meteor-paraview.git',
     documentation: 'README.md'
@@ -11,7 +11,7 @@ Package.onUse(function (api) {
     api.use('templating', 'client');
     api.use('jquery', 'client');
     api.use('reactive-var', 'client');
-    api.use('rcy:nouislider', 'client');
+    api.use('rcy:nouislider@7.0.7_2', 'client');
 
     api.addFiles('paraview.js', 'client');
 

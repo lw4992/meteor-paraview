@@ -11,15 +11,15 @@ PV = {
     currentFrameTime: 0,
     filterProperties: <{[id: string]: iPVFilterProperty[]}> {},
     filterUI: {},
-    proxies: new ReactiveVar<iPVProxy[]>([]),
-    proxyOpacities: {},
-    proxySettings: [],
+    elements: new ReactiveVar<iPVElement[]>([]),
+    elementOpacities: {},
+    elementSettings: [],
     lastMTime: 0,
     activeViewId: -1,
-    mainProxyId: 0,
-    activeSourceId: 0,
+    mainElementId: 0,
+    activeElementId: 0,
     activeRepId: 0,
-    fileProxyIdMap: {},
+    fileElementIdMap: {},
     filesForRemoval: [],
     viewportCssId: '#paraview-viewport',
     activeColorArrayLocation: '',
@@ -55,7 +55,7 @@ PV.scalarBar = new ReactiveVar<iPVScalarBarOpts>({
 //PV.setScalarBar = function(opts, asyncCallback?: iPVCallback) {
 ////    console.log('** Starting setScalarBarSyncable, visibilityMap = ' + JSON.stringify(options.visibilityMap));
 //    PV.session.call('pv.color.manager.scalarbar.visibility.set', [options.visibilityMap]).then(function(result) {
-//        if (!options.noCallback) asyncCallback && asyncCallback(null, {success: true});  // Doesn't seem like this needs to block, but bad if a new layer became last layer before completion
+//        if (!options.noCallback) asyncCallback && asyncCallback(null, {success: true});  // Doesn't seem like this needs to block, but bad if a new element became last element before completion
 //    }, asyncCallback);
 //};
 //
@@ -70,11 +70,11 @@ PV.scalarBar = new ReactiveVar<iPVScalarBarOpts>({
 //PV.removeAllScalarBars = function(asyncCallback?: iPVCallback) {
 ////    console.log('** Starting removeAllScalarBarsSyncable()');
 //    if (!PV.proxies || PV.proxies.length === 0) return asyncCallback && asyncCallback(null, {success: true});
-//    _.each(PV.proxies, function(proxy, i) {
+//    _.each(PV.proxies, function(element, i) {
 //        var scalarBarOptions = {
 //            visibilityMap: {}
 //        };
-//        scalarBarOptions.visibilityMap[proxy.id] = false;
+//        scalarBarOptions.visibilityMap[element.id] = false;
 //        if (i !== PV.proxies.length - 1) scalarBarOptions.noCallback = true;
 //        PV.setScalarBar(scalarBarOptions, asyncCallback);
 //    });
@@ -109,34 +109,34 @@ PV.config = function config(opts:iPVInitOpts, asyncCallback?:iPVCallback) {
 
 
 /**
- * Remove all the artifacts from the server.
+ * Remove all the elements from the server.
  *
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
-PV.removeAllProxies = function removeAllProxies(asyncCallback?: iPVCallback) {
-//    console.log('** Starting removeAllProxiesSyncable()');
-    var numProxies = PV.proxies.get().length;
-    if (numProxies === 0) asyncCallback(null, {success: true});
+PV.removeAllElements = function removeAllElements(asyncCallback?: iPVCallback) {
+//    console.log('** Starting removeAllElements()');
+    var numElements = PV.elements.get().length;
+    if (numElements === 0) asyncCallback(null, {success: true});
 
-    var i = numProxies;
+    var i = numElements;
     while (i--) {
         if (i === 0) {
-            PV.removeProxy(JSON.parse(JSON.stringify(PV.proxies.get()[i].id)), asyncCallback);
+            PV.removeElement(JSON.parse(JSON.stringify(PV.elements.get()[i].id)), asyncCallback);
         } else {
-            PV.removeProxy(JSON.parse(JSON.stringify(PV.proxies.get()[i].id)), asyncCallback);
+            PV.removeElement(JSON.parse(JSON.stringify(PV.elements.get()[i].id)), asyncCallback);
         }
     }
 };
 
 /**
- * Remove single proxy from the server
+ * Remove single element from the server
  *
- * @param {number} proxyId - id of proxy to be removed
+ * @param {number} elementId - id of element to be removed
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
-PV.removeProxy = function removeProxy(proxyId, asyncCallback?: iPVCallback) {
-//    console.log('** Starting removeProxySyncable(), options.proxyId = ' + removalOptions.proxyId);
-    PV.session.call('pv.proxy.manager.delete', [proxyId]).then(function (result) {
+PV.removeElement = function removeElement(elementId, asyncCallback?: iPVCallback) {
+//    console.log('** Starting removeElement()');
+    PV.session.call('pv.proxy.manager.delete', [elementId]).then(function (result) {
         asyncCallback && asyncCallback(null, {success: true});
     }, asyncCallback);
 };
@@ -164,7 +164,7 @@ PV._connect = function connect() {
             connection.session.call('vtk:exit');
             PV.session = null;
             Session.set('pvwInitialized', false);
-            PV.removeAllProxies(function (error, result) {
+            PV.removeAllElements(function (error, result) {
                 if (error) return PV._onError(error);
             });
         };
@@ -178,7 +178,7 @@ PV._connect = function connect() {
         console.log(reason);
         PV.session = null;
         Session.set('pvwInitialized', false);
-        PV.removeAllProxies(function (error, result) {
+        PV.removeAllElements(function (error, result) {
             if (error) return PV._onError(error);
         });
     });
@@ -217,7 +217,7 @@ PV.initSession = function initSession(asyncCallback?: iPVCallback) {
                     ',  PV.session._socket.url = ' + PV.session._socket.url +
                     ',  PV.session._socket.readyState = ' + PV.session._socket.readyState);
                 //console.log('PV.session = ' + JSON.stringify(PV.session, null, 4));
-                PV._saveServerProxyInfo(asyncCallback);
+                PV._saveServerElementInfo(asyncCallback);
                 //asyncCallback && asyncCallback(null, {success: true});
                 connectionComputation.stop();
             }
@@ -225,7 +225,7 @@ PV.initSession = function initSession(asyncCallback?: iPVCallback) {
     } else {
         console.log('Already connected to ParaView Server, reusing session');
         PV._bindViewport();
-        PV._saveServerProxyInfo(asyncCallback);
+        PV._saveServerElementInfo(asyncCallback);
         //asyncCallback && asyncCallback(null, {success: true});
     }
 };
@@ -234,34 +234,34 @@ PV._onError = function _onError(error) {
     console.log('Error: ' + JSON.stringify(error));
 };
 
-// Given an array of proxies, return the proxy with the given proxyId
-PV._getProxy = function _getProxy(proxies, proxyId) {
-    var proxy = _.find(proxies, function (proxy) {
-        return proxy.id === proxyId;
+// Given an array of elements, return the element with the given elementId
+PV._getElement = function _getElement(elements, elementId) {
+    var element = _.find(elements, function (element) {
+        return element.id === elementId;
     });
-    return proxy;
+    return element;
 };
 
-PV._getRepId = function _getRepId(proxies, proxyId) {
-    var proxy = PV._getProxy(proxies, proxyId);
-    return proxy && proxy.rep;
+PV._getRepId = function _getRepId(elements, elementId) {
+    var element = PV._getElement(elements, elementId);
+    return element && element.rep;
 };
 
-// Proxies are returned by the paraview server in any order.  Save the proxy info in the order the proxies were created.
-PV._saveServerProxyInfo = function _saveServerProxyInfo(asyncCallback?:iPVCallback) {
-//    console.log('** Starting setProxiesFromServer()');
+// Elements are returned by the paraview server in any order.  Save the element info in the order the elements were created.
+PV._saveServerElementInfo = function _saveServerElementInfo(asyncCallback?:iPVCallback) {
+//    console.log('** Starting _saveServerElementInfo()');
     PV.session.call('pv.proxy.manager.list').then(function (result) {
         if (result && result.view) PV.activeViewId = result.view;
         //console.log('result.view = ' + result.view);
         if (result && result.sources && result.sources.length !== 0) {
-            PV.activeSourceId = PV.activeSourceId || result.sources[result.sources.length - 1].id;  // If calling for first time, make last proxy the active one
-            PV.activeRepId = PV._getRepId(result.sources, PV.activeSourceId);
-            var proxies = <iPVProxy[]> _.sortBy(result.sources, function (proxy:any) {
-                return proxy.id;
+            PV.activeElementId = PV.activeElementId || result.sources[result.sources.length - 1].id;  // If calling for first time, make last element the active one
+            PV.activeRepId = PV._getRepId(result.sources, PV.activeElementId);
+            var elements = <iPVElement[]> _.sortBy(result.sources, function (element:any) {
+                return element.id;
             });
-            PV.proxies.set(proxies);
+            PV.elements.set(elements);
         }
-//        console.log('PV.proxies.get() = ' + JSON.stringify(PV.proxies.get()));
+//        console.log('PV.elements.get() = ' + JSON.stringify(PV.elements.get()));
         asyncCallback && asyncCallback(null, {success: true});
     }, asyncCallback);
 };
@@ -276,10 +276,10 @@ PV.addFile = function addFile(path, asyncCallback) {
 
     PV.session.call("pv.proxy.manager.create.reader", [path]).then(function (reply) {
         console.log('pv.proxy.manager.create.reader() reply = ' + JSON.stringify(reply));
-        PV.mainProxyId = reply.id;
-        PV.activeSourceId = reply.id;
-        PV.fileProxyIdMap[path] = reply.id;
-        PV._saveServerProxyInfo(asyncCallback);
+        PV.mainElementId = reply.id;
+        PV.activeElementId = reply.id;
+        PV.fileElementIdMap[path] = reply.id;
+        PV._saveServerElementInfo(asyncCallback);
     }, asyncCallback);
 };
 
@@ -329,48 +329,59 @@ PV.resetViewport = function resetViewport(asyncCallback?:iPVCallback) {
 };
 
 /**
- * Color a proxy (layer).  Called by PV.colorCells() and PV.colorPoints().
+ * Color an element (proxy).  Called by PV.colorCells() and PV.colorPoints().
  *
- * @param {Array} displayProps
+ * @param {Array} colorOptsArray - tells server how to color the element
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
+ * @example colorOptsArray has this format:
+ *
+ *         [
+ *             elementRepId: string,    // required
+ *             colorMode: string,       // required, "SOLID" or "ARRAY"
+ *             arrayLocation: string,   // optional, string, "POINTS" or "CELLS", defaults to "POINTS"
+ *             arrayName: string,       // optional, string, defaults to ""
+ *             vectorMode: string       // optional, string, defaults to "Magnitude"
+ *             vectorComponent?: number // optional, number, defaults to 0
+ *             rescale: boolean         // optional, boolean, defaults to false
+ *         ]
  */
 // API options found here:  http://www.paraview.org/ParaView3/Doc/Nightly/www/js-doc/index.html#!/api/protocols.ParaViewWebColorManager
 // A complete displayProps should look like [PV.activeRepId, colorMode, arrayLocation, arrayName, vectorMode, vectorComponent, rescale];
-PV.colorProxy = function colorProxy(displayProps, asyncCallback?:iPVCallback) {
-    //console.log('colorProxy(), displayProps = ' + JSON.stringify(displayProps, null, 4));
-    PV.session.call('pv.color.manager.color.by', displayProps).then(function () {
+PV.colorElement = function colorElement(colorOptsArray: any[], asyncCallback?:iPVCallback) {
+    //console.log('colorElement(), colorOptsArray = ' + JSON.stringify(colorOptsArray, null, 4));
+    PV.session.call('pv.color.manager.color.by', colorOptsArray).then(function () {
         asyncCallback && asyncCallback(null, {success: true});  // Doesn't seem like this needs to block, but \bad if a new layer became last layer before completion
     }, asyncCallback);
 };
 
 /**
- * Colors cells of a visualization.  Calls colorProxy([<activRepId>, 'ARRAY', 'CELLS', layerName])
+ * Colors cells of a visualization.  Calls colorElement([<activRepId>, 'ARRAY', 'CELLS', elementName])
  *
- * @param {string} layerName - name of layer, specified in visualization file
+ * @param {string} elementName - name of layer, specified in visualization file
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
-PV.colorCells = function colorCells(layerName:string, asyncCallback?:iPVCallback) {
-    PV.colorProxy([PV.activeRepId, 'ARRAY', 'CELLS', layerName], asyncCallback);
+PV.colorCells = function colorCells(elementName:string, asyncCallback?:iPVCallback) {
+    PV.colorElement([PV.activeRepId, 'ARRAY', 'CELLS', elementName, 'Magnitude', 0, false], asyncCallback);
 };
 
 /**
- * Colors points of a visualization.  Calls colorProxy([<activRepId>, 'ARRAY', 'POINTS', layerName, 'Magnitude', 0, true]) *
+ * Colors points of a visualization.  Calls colorElement([<activRepId>, 'ARRAY', 'POINTS', elementName, 'Magnitude', 0, true]) *
  *
- * @param {string} layerName - name of layer, specified in visualization file
+ * @param {string} elementName - name of layer, specified in visualization file
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
-PV.colorPoints = function(layerName: string, asyncCallback?: iPVCallback) {
-    var displayProps = [PV.activeRepId, 'ARRAY', 'POINTS', layerName, 'Magnitude', 0, true];
-    PV.colorProxy(displayProps, asyncCallback);
+PV.colorPoints = function colorPoints(elementName: string, asyncCallback?: iPVCallback) {
+    var displayProps = [PV.activeRepId, 'ARRAY', 'POINTS', elementName, 'Magnitude', 0, true];
+    PV.colorElement(displayProps, asyncCallback);
 };
 
 /**
- * Specify colorMap to use.
+ * Specify Color Map to use.
  *
  * @param {string} paletteName - name of the color map as it appears in the file
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
-PV.setPalette = function setPalette(paletteName:string, asyncCallback?:iPVCallback) {
+PV.updatePalette = function updatePalette(paletteName:string, asyncCallback?:iPVCallback) {
     //console.log('setPalatteSyncable(), calling pv.color.manager.select.preset with param = ' + JSON.stringify(paletteOptions));
     var paletteOptions = [PV.activeRepId, paletteName];
     PV.session.call('pv.color.manager.select.preset', paletteOptions).then(function (result) {
@@ -380,71 +391,62 @@ PV.setPalette = function setPalette(paletteName:string, asyncCallback?:iPVCallba
 };
 
 /**
- * Sets opacity of a specific proxy
+ * Sets opacity of a specific element
  *
- * @param proxyRepId
- * @param opacity
+ * @param {number} elementRepId - representation id of the element
+ * @param {number} opacity - 0 (fully transparent) to 1 (fully opaque)
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
-PV.setProxyOpacity = function setOpacity(proxyRepId: number, opacity:number, asyncCallback?:iPVCallback) {
-//    console.log('** Starting setProxyOpacity()');
+PV.updateElementOpacity = function updateElementOpacity(elementRepId: number, opacity:number, asyncCallback?:iPVCallback) {
+//    console.log('** Starting setElementOpacity()');
     var settings = {
-        id: proxyRepId,
+        id: elementRepId,
         name: "Opacity",
         value: opacity
     };
 
-    PV.proxySettings.push(settings);
-    PV.proxyOpacities[proxyRepId] = opacity;
-    PV._updateServerProxySettings(asyncCallback);
+    PV.elementSettings.push(settings);
+    PV.elementOpacities[elementRepId] = opacity;
+    PV._updateServerElements(asyncCallback);
 };
 
 
 /**
- * Sets opacity of last rendered proxy
+ * Sets opacity of last rendered element
  *
- * @param opacity
+ * @param {number} opacity - 0 (fully transparent) to 1 (fully opaque)
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
-PV.setOpacity = function setOpacity(opacity:number, asyncCallback?:iPVCallback) {
-//    console.log('** Starting setOpacity()');
-
-    PV.setProxyOpacity(PV.activeRepId, opacity, asyncCallback);
-
-    //var settings = {
-    //    id: PV.activeRepId,
-    //    name: "Opacity",
-    //    value: opacity
-    //};
-    //
-    //PV.proxySettings.push(settings);
-    //PV._updateServerProxySettings(asyncCallback);
+PV.updateOpacity = function updateOpacity(opacity:number, asyncCallback?:iPVCallback) {
+//    console.log('** Starting updateOpacity()');
+    PV.updateElementOpacity(PV.activeRepId, opacity, asyncCallback);
 };
 
 /**
- * Add a filter to last rendered proxy
+ * Add a filter to last rendered element
  *
- * @param filterName
- * @param settings
+ * @param {string} filterName - name of the filter, capitalized (e.g. `Tube`)
+ * @param {Object} filterOpts - object literal with filter properties and values
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
+ * @example  PV.addFilter('Tube', {Radius: .05, NumberOfSides: 12});
  */
-PV.addFilter = function addFilter(filterName:string, settings?:iPVFilterSettings, asyncCallback?:iPVCallback) {
+PV.addFilter = function addFilter(filterName:string, filterOpts?:iPVFilterOpts, asyncCallback?:iPVCallback) {
     //console.log('** Starting addFilter(), activeFilterName = ' + filterName + ', PV.activeSourceId = ' + PV.activeSourceId);
 
-    PV.session.call('pv.proxy.manager.create', [filterName, PV.activeSourceId]).then(function (filterInfo) {
+    PV.session.call('pv.proxy.manager.create', [filterName, PV.activeElementId]).then(function (filterInfo) {
         //console.log('filterInfo = ' + JSON.stringify(filterInfo, null, 4));
         PV.filterProperties[filterInfo.id] = filterInfo.properties;
         PV.filterUI[filterInfo.id] = filterInfo.ui;
-        PV.activeSourceId = filterInfo.id;
+        PV.activeElementId = filterInfo.id;
         PV.activeRepId = filterInfo.rep;
-        PV._saveServerProxyInfo();
-        PV.updateFilter(filterInfo.id, settings, asyncCallback);
+        PV._saveServerElementInfo();
+        PV.updateFilter(filterInfo.id, filterOpts, asyncCallback);
     });
 };
 
 PV._getFilterProperty = function getFilterProperty(propertyName: string): iPVFilterProperty {
 //    console.log('** Starting getFilterProperty(), propertyName = ' + propertyName);
-    var filterProperty = <iPVFilterProperty> _.find(PV.filterProperties[PV.activeSourceId], function(property: iPVFilterProperty) {
+    var filterProperty = <iPVFilterProperty> _.find(PV.filterProperties[PV.activeElementId], function(property: iPVFilterProperty) {
         return property.name === propertyName;
     });
     return filterProperty;
@@ -453,152 +455,153 @@ PV._getFilterProperty = function getFilterProperty(propertyName: string): iPVFil
 /**
  * Update the properties of a filter
  *
- * @param filterId
- * @param filterSettings
+ * @param {number} filterId
+ * @param {Object} filterOpts - object literal with filter properties and values
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
-// A single filter setting looks like the following:
-//{
-//    "id": "661",  // WarpByVector1 id
-//    "value": 500000,
-//    "name": "ScaleFactor"
-//},
-PV.updateFilter = function modifyFilter(filterId:number, filterSettings:{[filterName: string]: string | number | any[]}, asyncCallback?:iPVCallback) {
-    var settings = filterSettings || {};
+PV.updateFilter = function modifyFilter(filterId:number, filterOpts:{[filterName: string]: string | number | any[]}, asyncCallback?:iPVCallback) {
+    var settings = filterOpts || {};
     //console.log('** Starting modifyFilter(), filter settings = ' + JSON.stringify(settings));
 
     // TODO:  change this to use a map or something more efficient
     _.each(settings, function (settingValue, settingKey) {
-        // first look in filterSettings returned from server
-        var proxySetting = {
+        // first look in filterOpts returned from server
+        var elementSetting = {
             id: 0,
             name: settingKey,
             value: settingValue
         };
         var property = PV._getFilterProperty(settingKey);
-        proxySetting.id = property ? property.id : PV.activeSourceId;
-        if (proxySetting.name === 'GlyphSphereRadius') {
-            proxySetting.id = PV.filterUI[PV.activeSourceId][0].values.Sphere;
-            proxySetting.name = 'Radius';
+        elementSetting.id = property ? property.id : PV.activeElementId;
+        if (elementSetting.name === 'GlyphSphereRadius') {
+            elementSetting.id = PV.filterUI[PV.activeElementId][0].values.Sphere;
+            elementSetting.name = 'Radius';
         }
-        //console.log('Filter proxySetting = ' + JSON.stringify(proxySetting, null, 4));
-        PV.proxySettings.push(proxySetting);
+        //console.log('Filter elementSetting = ' + JSON.stringify(elementSetting, null, 4));
+        PV.elementSettings.push(elementSetting);
     });
 
     Meteor.setTimeout(function () {
-        PV._updateServerProxySettings(asyncCallback);
+        PV._updateServerElements(asyncCallback);
         //asyncCallback && asyncCallback(null, {success: true});
     }, 400);
 };
 
-PV._updateServerProxySettings = function _updateServerProxySettings(asyncCallback:iPVCallback) {
-    //console.log('** Starting updateServerProxySettings(), PV.proxySettings = ' + JSON.stringify(PV.proxySettings, null, 4));
+PV._updateServerElements = function _updateServerElements(asyncCallback:iPVCallback) {
+    //console.log('** Starting _updateServerElementSettings(), PV.elementSettings = ' + JSON.stringify(PV.elementSettings, null, 4));
     PV.backgroundSetting.id = PV.activeViewId;
-    PV.proxySettings.push(PV.backgroundSetting);
+    PV.elementSettings.push(PV.backgroundSetting);
 
-    PV.session.call('pv.proxy.manager.update', [PV.proxySettings]).then(function (result) {
+    PV.session.call('pv.proxy.manager.update', [PV.elementSettings]).then(function (result) {
         PV.viewport.invalidateScene();
         asyncCallback && asyncCallback(null, {success: true});
     }, asyncCallback);
 };
 
-PV._findLeafProxy = function _findLeafProxy(proxyId): iPVProxy {
-//    console.log('findLeafProxy(), proxyId = ' + proxyId);
-    var proxyInfo = _.find(PV.proxies.get(), function(proxy) {
-        return proxy.parent === proxyId;
+PV._findLeafElement = function _findLeafElement(elementId): iPVElement {
+//    console.log('findLeafElement(), elementId = ' + elementId);
+    var elementInfo = _.find(PV.elements.get(), function(element) {
+        return element.parent === elementId;
     });
 
     // if child found, first try to return another child if found and otherwise return the current child
-    if (proxyInfo) return proxyInfo || PV._findLeafProxy(proxyInfo.id);
+    if (elementInfo) return elementInfo || PV._findLeafElement(elementInfo.id);
 
     // only reaches here for case of no children found
-    proxyInfo = _.find(PV.proxies.get(), function(proxy) {  // for case of
-        return proxy.id === proxyId;
+    elementInfo = _.find(PV.elements.get(), function(element) {  // for case of
+        return element.id === elementId;
     });
-    return proxyInfo;
+    return elementInfo;
 };
 
-PV._filePathToLeafProxy = function _filePathToLeafProxy(filePath: string): iPVProxy {
-    var proxyId = PV.fileProxyIdMap[filePath];
-    if (!proxyId) {
+PV._filePathToLeafElement = function _filePathToLeafElement(filePath: string): iPVElement {
+    var elementId = PV.fileElementIdMap[filePath];
+    if (!elementId) {
         console.log('Could not find filePath: ' + filePath);
         return null;
     }
 
-    return PV._findLeafProxy(proxyId);
+    return PV._findLeafElement(elementId);
 };
 
 /**
+ * Show or hide an element
  *
- * @param proxyRepId
- * @param isVisible
+ * @param {number} elementRepId
+ * @param {boolean} isVisible
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
-PV.setProxyVisibility = function(proxyRepId: number, isVisible: boolean, asyncCallback?: iPVCallback) {
-    var proxySetting = {
-        id: proxyRepId || PV.activeRepId,
+PV.updateElementVisibility = function updateElementVisibility(elementRepId: number, isVisible: boolean, asyncCallback?: iPVCallback) {
+    var elementSetting = {
+        id: elementRepId || PV.activeRepId,
         name: 'Visibility',
         value: Number(isVisible)
     };
-    //console.log('setProxyVisibility(), proxySetting = ' + JSON.stringify(proxySetting, null, 4));
-    PV.proxySettings.push(proxySetting);
-    PV._updateServerProxySettings(asyncCallback);
+    //console.log('setElementVisibility(), elementSetting = ' + JSON.stringify(elementSetting, null, 4));
+    PV.elementSettings.push(elementSetting);
+    PV._updateServerElements(asyncCallback);
 };
 
 /**
+ * Show the element (if it is hidden).
  *
- * @param proxyRepId
+ * @param {number} elementRepId - representation ID of the element
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
-PV.showProxy = function(proxyRepId: number, asyncCallback?: iPVCallback) {
-//    console.log('** Starting showProxyNow()');
-    PV.setProxyVisibility(proxyRepId, true, asyncCallback);
+PV.showElement = function(elementRepId: number, asyncCallback?: iPVCallback) {
+//    console.log('** Starting showElement()');
+    PV.updateElementVisibility(elementRepId, true, asyncCallback);
 };
 
 /**
+ * Hide the element with the given file path.
  *
- * @param filePath
+ * @param {string} filePath -- a file path that was previously an argument for `PV.addFile()`
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
-PV.showProxyByFilePath = function(filePath: string, asyncCallback?: iPVCallback) {
-    var leafProxy = PV._filePathToLeafProxy(filePath);
-//    console.log('showProxyByFilePath(), leafProxy = ' + JSON.stringify(leafProxy));
-    PV.showProxy(leafProxy.rep, asyncCallback);
+PV.showElementByFilePath = function showElementByFilePath(filePath: string, asyncCallback?: iPVCallback) {
+    var leafElement = PV._filePathToLeafElement(filePath);
+//    console.log('showElementByFilePath(), leafElement = ' + JSON.stringify(leafElement));
+    PV.showElement(leafElement.rep, asyncCallback);
 };
 
 /**
+ * Hide the element (if it is showing)
  *
- * @param proxyRepId
+ * @param {number} elementRepId - representation ID of the element
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
-PV.hideProxy = function(proxyRepId: number, asyncCallback?: iPVCallback) {
-//    console.log('** Starting hideProxy()');
-    PV.setProxyVisibility(proxyRepId, false, asyncCallback);
+PV.hideElement = function hideElement(elementRepId: number, asyncCallback?: iPVCallback) {
+//    console.log('** Starting hideElement()');
+    PV.updateElementVisibility(elementRepId, false, asyncCallback);
 };
 
 /**
+ * Show the element with the given file path.
  *
- * @param filePath
+ * @param {string} filePath -- a file path that was previously an argument for `PV.addFile()`
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
-PV.hideProxyByFilePath = function(filePath: string, asyncCallback?: iPVCallback) {
-    var leafProxy = PV._filePathToLeafProxy(filePath);
-    //console.log('hideProxyByFilePath(), leafProxy = ' + JSON.stringify(leafProxy));
-    PV.hideProxy(leafProxy.rep, asyncCallback);
+PV.hideElementByFilePath = function hideElementByFilePath(filePath: string, asyncCallback?: iPVCallback) {
+    var leafElement = PV._filePathToLeafElement(filePath);
+    //console.log('hideElementByFilePath(), leafElement = ' + JSON.stringify(leafElement));
+    PV.hideElement(leafElement.rep, asyncCallback);
 };
 
 /**
+ * Hide the last rendered element.
  *
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
 PV.hide = function hide(asyncCallback?: iPVCallback) {
     //console.log('** Starting hide(), PV.activeRepId = ' + PV.activeRepId);
-    PV.hideProxy(PV.activeRepId, asyncCallback);
+    PV.hideElement(PV.activeRepId, asyncCallback);
 };
 
 /**
+ * Change how the surfaces appear for the last rendered element.
  *
- * @param representationName
+ * @param {string} representationName - name of the representation.  Choices are "Surface", "SurfaceWithEdges". etc.
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
 PV.changeRepresentation = function changeRepresentation(representationName: string, asyncCallback: iPVCallback) {
@@ -609,13 +612,14 @@ PV.changeRepresentation = function changeRepresentation(representationName: stri
         value: representationName
     };
 
-    PV.proxySettings.push(settings);
-    PV._updateServerProxySettings(asyncCallback);
+    PV.elementSettings.push(settings);
+    PV._updateServerElements(asyncCallback);
 };
 
 /**
+ * Change some aspect of a video.
  *
- * @param vcrOptions
+ * @param {Object} vcrOptions
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
 // options.vcrAction can be 'first', 'prev', 'next' or 'last'
@@ -628,6 +632,7 @@ PV.alterVideo = function alterVideo(vcrOptions, asyncCallback) {
 };
 
 /**
+ * Show the first frame of a video
  *
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
@@ -637,6 +642,7 @@ PV.showFirstFrame = function showFirstFrame(asyncCallback?: iPVCallback) {
 };
 
 /**
+ * Show the last frame of a video
  *
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
@@ -646,6 +652,7 @@ PV.showLastFrame = function showLastFrame(asyncCallback?: iPVCallback) {
 };
 
 /**
+ * Play the last rendered video and stop play when it finishes
  *
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
@@ -674,6 +681,7 @@ PV.playStopEnd = function playStopEnd(asyncCallback?: iPVCallback) {
 };
 
 /**
+ * Play the last rendered video and repeat when it finishes
  *
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
@@ -701,20 +709,22 @@ PV.playRepeat = function playRepeat(asyncCallback?: iPVCallback) {
 };
 
 /**
+ * Rescale all measurements to fit the image.  Useful for videos.
  *
  * @param {requestCallback} asyncCallback - standard Node-style, executed upon completion, has signature `function(error: Object, success: Object)`
  */
 PV.rescale = function rescale(asyncCallback: iPVCallback) {
-//    console.log('PVW.rescaleSyncable(), calling pv.color.manager.rescale.transfer.function with param = ' + JSON.stringify([{proxyId: PVW.activeSourceId, type:"data"}]));
-    PV.session.call('pv.color.manager.rescale.transfer.function', [{proxyId: PV.activeSourceId, type:"data"}]).then(function(result) {
+//    console.log('PVW.rescaleSyncable(), calling pv.color.manager.rescale.transfer.function with param = ' + JSON.stringify([{elementId: PVW.activeSourceId, type:"data"}]));
+    PV.session.call('pv.color.manager.rescale.transfer.function', [{proxyId: PV.activeElementId, type:"data"}]).then(function(result) {
 //        console.log('pv.color.manager.rescale.transfer.function success, set result = ' + JSON.stringify(result));
         asyncCallback && asyncCallback(null, {success: true});
     }, asyncCallback);
 };
 
 /**
+ * Change the perspective of the viewer relative to the view.  Can zoom in, zoom out, change vantage points and focal points
  *
- * @param opts
+ * @param {Object} opts
  * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
  */
 PV.updateCamera = function(opts: iPVCameraOpts, asyncCallback?: iPVCallback) {
@@ -729,40 +739,70 @@ PV.updateCamera = function(opts: iPVCameraOpts, asyncCallback?: iPVCallback) {
     });
 };
 
-PV.setOrientationAxesVisibility = function setOrientationAxesVisibility(isVisible: boolean, asyncCallback?: iPVCallback) {
-    //console.log('setOrientationAxesVisibility()');
-    var proxySetting = {
+/**
+ * Show or hide the Orientation Axes
+ *
+ * @param {boolean} isVisible
+ * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
+ */
+PV.updateOrientationAxesVisibility = function updateOrientationAxesVisibility(isVisible: boolean, asyncCallback?: iPVCallback) {
+    //console.log('updateOrientationAxesVisibility()');
+    var elementSetting = {
         id: PV.activeViewId,
         value: Number(isVisible),
         name: "OrientationAxesVisibility"
     };
-    PV.session.call('pv.proxy.manager.update', [[proxySetting]]).then(function(result) {
+    PV.session.call('pv.proxy.manager.update', [[elementSetting]]).then(function(result) {
         PV.viewport.invalidateScene();
     });
 };
 
-PV.getProxyFromServer = function getProxyFromServer(proxyId: number, asyncCallback?: iPVCallback) {
-    PV.session.call('pv.proxy.manager.get', [proxyId]).then(function (result) {
-        console.log('Stringified, pv.proxy.manager.get results = ' + JSON.stringify(result, null, 4));
+/**
+ * Show or hide the Center Axes
+ *
+ * @param isVisible
+ * @param {requestCallback} [asyncCallback] - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
+ */
+PV.updateCenterAxesVisibility = function updateCenterAxesVisibility(isVisible: boolean, asyncCallback?: iPVCallback) {
+    //console.log('updateOrientationAxesVisibility()');
+    var elementSetting = {
+        id: PV.activeViewId,
+        value: Number(isVisible),
+        name: "CenterAxesVisibility"
+    };
+    PV.session.call('pv.proxy.manager.update', [[elementSetting]]).then(function(result) {
+        PV.viewport.invalidateScene();
+    });
+};
+
+/**
+ * Get some details about an element
+ *
+ * @param {number} elementId
+ * @param {requestCallback} [asyncCallback] - optional, standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
+ */
+PV.getElementFromServer = function getElementFromServer(elementId: number, asyncCallback?: iPVCallback) {
+    PV.session.call('pv.proxy.manager.get', [elementId]).then(function (result) {
+        //console.log('Stringified, pv.proxy.manager.get results = ' + JSON.stringify(result, null, 4));
         asyncCallback && asyncCallback(null, {success: true});
     });
 };
 
-PV.getOpacity = function getOpacity(repId: number, asyncCallback?: iPVCallback) {
-    PV.session.call('pv.color.manager.surface.opacity.get', [repId]).then(function(result) {
-        console.log('opacity repId = ' + repId);
+PV.getOpacity = function getOpacity(elementRepId: number, asyncCallback?: iPVCallback) {
+    PV.session.call('pv.color.manager.surface.opacity.get', [elementRepId]).then(function(result) {
+        console.log('opacity elementRepId = ' + elementRepId);
         console.log('Stringified, pv.color.manager.surface.opacity results = ' + JSON.stringify(result, null, 4));
         asyncCallback && asyncCallback(null, {success: true});
     });
 };
 
 /**
- * Print all proxies on the server for debugging
+ * Print all elements (a.k.a. proxies) on the server for debugging
  */
-PV.printServerProxies = function printServerProxies() {
+PV.printServerElements = function printServerElements() {
     PV.session.call('pv.proxy.manager.list').then(function (result) {
         var newResult = JSON.parse(JSON.stringify(result));
-        newResult.sources = _.sortBy(result.sources, function (proxy:iPVProxy) {
+        newResult.sources = _.sortBy(result.sources, function (proxy:iPVElement) {
             return proxy.id;
         });
         console.log('pv.proxy.manager.list result = ' + JSON.stringify(newResult, null, 4));
