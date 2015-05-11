@@ -1,5 +1,5 @@
 ## Under Development
-Disclaimer:  this package is currently under heavy development and undoubtedly contains many bugs.
+Disclaimer:  this package is currently under heavy development and undoubtedly contains many bugs.  Contributions are welcome.
 
 ## ParaView
 [ParaView](http://www.paraview.org/) is a is an open-source, multi-platform data analysis and visualization application.  This package provides a user-friendly wrapper for the [ParaViewWeb JavaScript API](http://www.paraview.org/ParaView3/Doc/Nightly/www/js-doc/index.html#!/api).
@@ -46,7 +46,7 @@ Set the required configuration properties, initialize a session, and add a file:
 - "Filter" - an element that is the result of the manipulation of the visual data of another element
     - a filter applied to a file rendering or another filter
 
-## Methods API
+## JSDocs API
 
 
 ### PV.config(opts, asyncCallback) 
@@ -297,136 +297,6 @@ Set the required configuration properties, initialize a session, and add a file:
 ### PV.printServerElements() 
 - **Description**: Print all elements (a.k.a. proxies) on the server for debugging
 
-
-* * *
-
-
-
-### removeAllProxies(asyncCallback) 
-- **Description**: Remove all the artifacts from the server.
-- **Parameters**
-    - **asyncCallback**: `requestCallback`, standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
-
-### removeProxy(proxyId, asyncCallback) 
-- **Description**: Remove single proxy from the server
-- **Parameters**
-    - **proxyId**: `number`, id of proxy to be removed
-    - **asyncCallback**: `requestCallback`, Remove single proxy from the server
-
-### render(width, height, asyncCallback) 
-- **Description**: Refresh the viewport with any changes to the server
-- **Parameters**
-    - **width**: `number`, Refresh the viewport with any changes to the server
-    - **height**: `number`, Refresh the viewport with any changes to the server
-    - **asyncCallback**: , Refresh the viewport with any changes to the server
-
-### resetViewport(asyncCallback) 
-- **Parameters**
-    - **asyncCallback**: 
-
-### colorProxy(displayProps, asyncCallback) 
-- **Parameters**
-    - **displayProps**: 
-    - **asyncCallback**: 
-
-### colorCells(layerName, asyncCallback) 
-- **Parameters**
-    - **layerName**: 
-    - **asyncCallback**: 
-
-### colorPoints(layerName, asyncCallback) 
-- **Parameters**
-    - **layerName**: 
-    - **asyncCallback**: 
-
-### setPalette(paletteName, asyncCallback) 
-- **Parameters**
-    - **paletteName**: 
-    - **asyncCallback**: 
-
-### setOpacity(opacity, asyncCallback) 
-- **Parameters**
-    - **opacity**: 
-    - **asyncCallback**: 
-
-### addFilter(filterName, settings, asyncCallback) 
-- **Parameters**
-    - **filterName**: 
-    - **settings**: 
-    - **asyncCallback**: 
-
-### modifyFilter(filterId, filterSettings, asyncCallback) 
-- **Parameters**
-    - **filterId**: 
-    - **filterSettings**: 
-    - **asyncCallback**: 
-
-### setProxyVisibility(proxyRepId, isVisible, asyncCallback) 
-- **Parameters**
-    - **proxyRepId**: 
-    - **isVisible**: 
-    - **asyncCallback**: 
-
-### showProxy(proxyRepId, asyncCallback) 
-- **Parameters**
-    - **proxyRepId**: 
-    - **asyncCallback**: 
-
-### showProxyByFilePath(filePath, asyncCallback) 
-- **Parameters**
-    - **filePath**: 
-    - **asyncCallback**: 
-
-### hideProxy(proxyRepId, asyncCallback) 
-- **Parameters**
-    - **proxyRepId**: 
-    - **asyncCallback**: 
-
-### hideProxyByFilePath(filePath, asyncCallback) 
-- **Parameters**
-    - **filePath**: 
-    - **asyncCallback**: 
-
-### hide(asyncCallback) 
-- **Parameters**
-    - **asyncCallback**: 
-
-### changeRepresentation(representationName, asyncCallback) 
-- **Parameters**
-    - **representationName**: 
-    - **asyncCallback**: 
-
-### alterVideo(vcrOptions, asyncCallback) 
-- **Parameters**
-    - **vcrOptions**: 
-    - **asyncCallback**: 
-
-### showFirstFrame(asyncCallback) 
-- **Parameters**
-    - **asyncCallback**: 
-
-### showLastFrame(asyncCallback) 
-- **Parameters**
-    - **asyncCallback**: 
-
-### playStopEnd(asyncCallback) 
-- **Parameters**
-    - **asyncCallback**: 
-
-### playRepeat(asyncCallback) 
-- **Parameters**
-    - **asyncCallback**: 
-
-### rescale(asyncCallback) 
-- **Parameters**
-    - **asyncCallback**: 
-
-### updateCamera(opts, asyncCallback) 
-- **Parameters**
-    - **opts**: 
-    - **asyncCallback**: 
-
-### printServerProxies() 
 
 
 
