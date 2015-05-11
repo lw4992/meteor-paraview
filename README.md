@@ -38,7 +38,7 @@ Set the required configuration properties, initialize a session, and add a file:
  
 ## Terminology and Structure
 - "View" - the space in which the visualization appears
-- "Element" - an artifact that produces a separate visual object (can hide or shwo it)
+- "Element" - an artifact that produces a separate visual object (can hide or show it)
     - An element is equivalent to a "proxy" in the ParaViewWeb API, a term that doesn't make much sense for most client-side developers
     - Elements can be file renderings or filters
     - Elements have properties that determine how they are displayed
