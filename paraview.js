@@ -166,14 +166,14 @@ PV = (function () {
         //console.log('** Starting initSession(), asyncCallback = ' + asyncCallback);
         if (!_session) {
             Session.set('pvwConnected', false);
-            console.log('Creating connection and _session with ParaView Server...');
+            console.log('Creating connection and session with ParaView Server...');
             _connect();
             connectionComputation = Tracker.autorun(function () {
                 var isConnected = Session.get('pvwConnected');
                 if (isConnected) {
                     _bindViewport(); // I think all of this is synchronous
                     //                console.log('Completed initializeSyncable(), PV._session._wsuri = ' + PV._session._wsuri + ',  PV._session._session_id = ' + PV._session._session_id + ',  PV._session._websocket_connected = ' + PV._session._websocket_connected);
-                    console.log('Created _session with ParaView server, PV._session._id = ' + _session._id + ',  PV._session._socket.url = ' + _session._socket.url + ',  PV._session._socket.readyState = ' + _session._socket.readyState);
+                    console.log('Created session with ParaView server, PV._session._id = ' + _session._id + ',  PV._session._socket.url = ' + _session._socket.url + ',  PV._session._socket.readyState = ' + _session._socket.readyState);
                     //console.log('PV._session = ' + JSON.stringify(PV._session, null, 4));
                     _saveServerElementInfo(asyncCallback);
                     //asyncCallback && asyncCallback(null, {success: true});
@@ -182,7 +182,7 @@ PV = (function () {
             });
         }
         else {
-            console.log('Already connected to ParaView Server, reusing _session');
+            console.log('Already connected to ParaView Server, reusing session');
             _bindViewport();
             _saveServerElementInfo(asyncCallback);
         }
@@ -727,6 +727,9 @@ PV = (function () {
     var getServerSessionManagerUrl = function getServerSessionManagerUrl() {
         return serverSessionManagerUrl;
     };
+    var isConnected = function isConnected() {
+        return !!_session;
+    };
     // public API
     return {
         // public member vars
@@ -775,7 +778,8 @@ PV = (function () {
         updateCamera: updateCamera,
         updateOrientationAxesVisibility: updateOrientationAxesVisibility,
         updateCenterAxesVisibility: updateCenterAxesVisibility,
-        getElementFromServer: getElementFromServer
+        getElementFromServer: getElementFromServer,
+        isConnected: isConnected
     };
 }());
 //# sourceMappingURL=paraview.js.map

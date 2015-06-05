@@ -6,6 +6,7 @@
 //   }
 // ]
 var proxiesComputation;
+var addedProxies = []; // page-scoped so it doesn't try to render old proxies between pages
 var createProxyGroups = function createProxyGroups(proxies) {
     //console.log('Stringified, elements = ' + JSON.stringify(elements, null, 4));
     var proxyGroups = [];
@@ -65,10 +66,10 @@ Template['paraviewControlPanel']['events']({
     }
 });
 Template['paraviewControlPanel'].rendered = function () {
-    var addedProxies = [];
     proxiesComputation = Tracker.autorun(function () {
-        PV.elements.get().forEach(function (proxy) {
-            Meteor.setTimeout(function () {
+        Meteor.setTimeout(function () {
+            var elements = PV.elements.get(); // reactive, triggers Tracker.autorun
+            elements.forEach(function (proxy) {
                 if (addedProxies.indexOf(proxy.rep) > -1) {
                     //console.log('returning!');
                     return;
@@ -89,8 +90,8 @@ Template['paraviewControlPanel'].rendered = function () {
                 });
                 $('#slider-' + proxy.rep).Link('lower').to($('#slider-value-' + proxy.rep));
                 addedProxies.push(proxy.rep);
-            }, 5000);
-        });
+            });
+        }, 5000);
     });
 };
 Template['paraviewControlPanel'].destroyed = function () {

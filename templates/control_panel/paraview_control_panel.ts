@@ -7,19 +7,20 @@
 //   }
 // ]
 
-var proxiesComputation: Tracker.Computation;
+var proxiesComputation:Tracker.Computation;
+var addedProxies = []; // page-scoped so it doesn't try to render old proxies between pages
 
 var createProxyGroups = function createProxyGroups(proxies) {
     //console.log('Stringified, elements = ' + JSON.stringify(elements, null, 4));
     var proxyGroups = [];
 
-    proxies.forEach(function(proxy1) {
+    proxies.forEach(function (proxy1) {
         if (proxy1.parent === '0') {
             var proxyGroup = {
                 parent: proxy1,
                 children: []
             };
-            proxies.forEach(function(proxy2) {
+            proxies.forEach(function (proxy2) {
                 if (proxy2.parent === proxy1.id) {
                     proxyGroup.children.push(proxy2);
                 }
@@ -37,7 +38,7 @@ Template['paraviewControlPanel'].helpers({
         return PV.elements.get();
     },
     proxyGroups: function () {
-        var proxies =  PV.elements.get();
+        var proxies = PV.elements.get();
         return createProxyGroups(proxies);
     }
 });
@@ -61,7 +62,7 @@ Template['paraviewControlPanel']['events']({
         $target.closest('a').toggle();
         $target.closest('a').siblings().toggle();
     },
-    'slide .slider': function(event, tmpl) {
+    'slide .slider': function (event, tmpl) {
         var repId = $(event.target).closest('.slider').data('rep-id');
         var opacity = $('#slider-value-' + repId).text();
         PV.updateElementOpacity(Number(repId), Number(opacity));
@@ -69,10 +70,10 @@ Template['paraviewControlPanel']['events']({
 });
 
 Template['paraviewControlPanel'].rendered = function () {
-    var addedProxies = [];
     proxiesComputation = Tracker.autorun(function () {
-        PV.elements.get().forEach(function (proxy) {
-            Meteor.setTimeout(function () {
+        Meteor.setTimeout(function () {
+            var elements = PV.elements.get(); // reactive, triggers Tracker.autorun
+            elements.forEach(function (proxy) {
                 if (addedProxies.indexOf(proxy.rep) > -1) {
                     //console.log('returning!');
                     return;
@@ -95,13 +96,11 @@ Template['paraviewControlPanel'].rendered = function () {
                 });
                 $('#slider-' + proxy.rep).Link('lower').to($('#slider-value-' + proxy.rep));
                 addedProxies.push(proxy.rep);
-
-            }, 5000);
-
-        });
+            });
+        }, 5000);
     });
 };
 
-Template['paraviewControlPanel'].destroyed = function() {
+Template['paraviewControlPanel'].destroyed = function () {
     proxiesComputation && proxiesComputation.stop();
 };
