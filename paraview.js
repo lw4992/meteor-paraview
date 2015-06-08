@@ -244,6 +244,10 @@ PV = (function () {
      * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
      */
     var render = function render(width, height, asyncCallback) {
+        if (!_session) {
+            asyncCallback && asyncCallback(null, { success: true });
+            return;
+        }
         //console.log('** Starting render(), width = ' + width);
         var width = width || $(_viewportCssId).innerWidth();
         var height = height || $(_viewportCssId).innerHeight();
@@ -493,7 +497,12 @@ PV = (function () {
     var showElementByFilePath = function showElementByFilePath(filePath, asyncCallback) {
         var leafElement = _filePathToLeafElement(filePath);
         //    console.log('showElementByFilePath(), leafElement = ' + JSON.stringify(leafElement));
-        showElement(leafElement.rep, asyncCallback);
+        if (leafElement) {
+            showElement(leafElement.rep, asyncCallback);
+        }
+        else {
+            console.log('Warning:  PV.showElementByFilePath(), Could not find leafElement for filePath of "' + filePath + '"');
+        }
     };
     /**
      * Hide the element (if it is showing)
@@ -513,8 +522,14 @@ PV = (function () {
      */
     var hideElementByFilePath = function hideElementByFilePath(filePath, asyncCallback) {
         var leafElement = _filePathToLeafElement(filePath);
+        //console.log('hideElementByFilePath(), filePath = ' + filePath);
         //console.log('hideElementByFilePath(), leafElement = ' + JSON.stringify(leafElement));
-        hideElement(leafElement.rep, asyncCallback);
+        if (leafElement) {
+            hideElement(leafElement.rep, asyncCallback);
+        }
+        else {
+            console.log('Warning:  PV.hideElementByFilePath(), Could not find leafElement for filePath of "' + filePath + '"');
+        }
     };
     /**
      * Hide the last rendered element.
