@@ -173,7 +173,9 @@ PV = (function () {
                 if (isConnected) {
                     _bindViewport(); // I think all of this is synchronous
                     //                console.log('Completed initializeSyncable(), PV._session._wsuri = ' + PV._session._wsuri + ',  PV._session._session_id = ' + PV._session._session_id + ',  PV._session._websocket_connected = ' + PV._session._websocket_connected);
-                    console.log('Created session with ParaView server, PV._session._id = ' + _session._id + ',  PV._session._socket.url = ' + _session._socket.url + ',  PV._session._socket.readyState = ' + _session._socket.readyState);
+                    console.log('Created session with ParaView server, PV._session._id = ' + _session._id +
+                        ',  PV._session._socket.url = ' + _session._socket.url +
+                        ',  PV._session._socket.readyState = ' + _session._socket.readyState);
                     //console.log('PV._session = ' + JSON.stringify(PV._session, null, 4));
                     _saveServerElementInfo(asyncCallback);
                     //asyncCallback && asyncCallback(null, {success: true});
