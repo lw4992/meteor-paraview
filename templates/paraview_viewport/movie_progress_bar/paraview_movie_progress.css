@@ -1,0 +1,53 @@
+#movie-progress {
+    display: inline-block;
+    position: absolute;
+    top: -30px;
+    right: 15px;
+    /*right: @grid-gutter-width/2;*/
+    width: 350px;
+    height: 30px;
+    /*div.progress {*/
+        /*position: absolute;*/
+        /*top: 50%;*/
+        /*-ms-transform: translate(0, -50%);*/
+        /*-webkit-transform: translate(0, -50%);*/
+        /*-o-transform: translate(0, -50%);*/
+        /*transform: translate(0, -50%);*/
+        /*width: 300px;*/
+        /*display: inline-block;*/
+    /*}*/
+    /*#progress-text {*/
+        /*position: absolute;*/
+        /*top: 50%;*/
+        /*-ms-transform: translate(0, -50%);*/
+        /*-webkit-transform: translate(0, -50%);*/
+        /*-o-transform: translate(0, -50%);*/
+        /*transform: translate(0, -50%);*/
+        /*width: 30px;*/
+        /*left: 310px;*/
+        /*display: inline-block;*/
+    /*}*/
+}
+
+div.progress {
+    position: absolute;
+    top: 50%;
+    -ms-transform: translate(0, -50%);
+    -webkit-transform: translate(0, -50%);
+    -o-transform: translate(0, -50%);
+    transform: translate(0, -50%);
+    width: 300px;
+    display: inline-block;
+}
+
+#progress-text {
+    position: absolute;
+    top: 50%;
+    -ms-transform: translate(0, -50%);
+    -webkit-transform: translate(0, -50%);
+    -o-transform: translate(0, -50%);
+    transform: translate(0, -50%);
+    width: 30px;
+    left: 310px;
+    display: inline-block;
+}

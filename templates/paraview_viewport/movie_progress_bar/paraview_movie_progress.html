@@ -1,0 +1,10 @@
+<template name="paraviewMovieProgress">
+    {{#if $.Session.get 'sim.showMovieProgress'}}
+        <div id="movie-progress" class="pull-right">
+            <div class="progress">
+                <div class="progress-bar progress-bar-info" style="width: {{$.Session.get 'sim.movieProgressPercent'}}%"></div>
+            </div>
+            <div id="progress-text">{{$.Session.get 'sim.movieProgressPercent'}}%</div>
+        </div>
+    {{/if}}
+</template>

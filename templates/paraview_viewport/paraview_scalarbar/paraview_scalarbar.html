@@ -1,0 +1,47 @@
+<template name="paraviewScalarbar">
+    {{#if displayScalarBar}}
+        <div id="paraview-scalarbar">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">{{scalarBarTitle}}</h3>
+                </div>
+                <div class="panel-body">
+                    {{#if areDiscreteValues}}
+
+                        <table class="key-table">
+                            {{#each labelsAndColors}}
+                                <tr>
+                                    <td class="key-color discrete" >
+                                        <div style="background-color:{{color}}">&nbsp;</div>
+                                    </td>
+                                    <td class="key-label-discrete">{{label}}</td>
+                                </tr>
+                            {{/each}}
+                        </table>
+
+                    {{else}}
+
+                        <table class="key-table">
+                            <tr>
+                                <td rowspan="{{numLabels}}" class="key-color continuous">
+                                    <div style="height: {{colorBoxHeight}}px; background: {{gradientValue}}">&nbsp;</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <table>
+                                    {{#each labelsAndColors}}
+                                        <tr>
+                                            <td class="key-label-continuous">- {{label}}</td>
+                                        </tr>
+                                    {{/each}}
+                                </table>
+                            </tr>
+                        </table>
+
+                    {{/if}}
+
+                </div>
+            </div>
+        </div>
+    {{/if}}
+</template>

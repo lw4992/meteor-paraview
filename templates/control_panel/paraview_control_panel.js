@@ -5,7 +5,6 @@
 //     children: [proxy, proxy, proxy]
 //   }
 // ]
-var proxiesComputation;
 var addedProxies = []; // page-scoped so it doesn't try to render old proxies between pages
 var createProxyGroups = function createProxyGroups(proxies) {
     //console.log('Stringified, elements = ' + JSON.stringify(elements, null, 4));
@@ -36,22 +35,21 @@ Template['paraviewControlPanel'].helpers({
         return createProxyGroups(proxies);
     }
 });
-Template['paraviewControlPanel']['events']({
-    'change #orientation-axis-checkbox': function (event, tmpl) {
-        //console.log('Checkbox changed');
+Template['paraviewControlPanel'].events({
+    'change #orientation-axis-checkbox': function (event, template) {
         if (event.target.checked)
             PV.updateOrientationAxesVisibility(true);
         else
             PV.updateOrientationAxesVisibility(false);
     },
-    'change [data-proxy-checkbox]': function (event, tmpl) {
-        var proxyRepId = $(event.target).data('rep-id');
+    'change [data-proxy-checkbox]': function (event, template) {
+        var proxyRepId = event.target.getAttribute('data-rep-id');
         if (event.target.checked)
             PV.updateElementVisibility(proxyRepId, true);
         else
             PV.updateElementVisibility(proxyRepId, false);
     },
-    'click .pv-expander-collapser': function (event, tmpl) {
+    'click .pv-expander-collapser': function (event, template) {
         event.preventDefault();
         var $target = $(event.target);
         var groupId = $target.closest('a').attr('href');
@@ -59,42 +57,75 @@ Template['paraviewControlPanel']['events']({
         $target.closest('a').toggle();
         $target.closest('a').siblings().toggle();
     },
-    'slide .slider': function (event, tmpl) {
-        var repId = $(event.target).closest('.slider').data('rep-id');
-        var opacity = $('#slider-value-' + repId).text();
+    'click .slider': function (event, template) {
+        var repId = event.target.closest('.slider').getAttribute('data-rep-id');
+        var opacity = template.find('#slider-value-' + repId).innerHTML;
         PV.updateElementOpacity(Number(repId), Number(opacity));
     }
 });
-Template['paraviewControlPanel'].rendered = function () {
-    proxiesComputation = Tracker.autorun(function () {
-        Meteor.setTimeout(function () {
-            var elements = PV.elements.get(); // reactive, triggers Tracker.autorun
-            elements.forEach(function (proxy) {
-                if (addedProxies.indexOf(proxy.rep) > -1) {
-                    //console.log('returning!');
-                    return;
-                }
-                //console.log('proxy.rep = ' + proxy.rep);
-                var $slider = $('#slider-' + proxy.rep);
-                if (!$slider.data('rep-id'))
-                    return;
-                var opacity = PV.elementOpacities[proxy.rep];
-                $('#slider-' + proxy.rep).noUiSlider({
-                    start: [opacity || 1],
-                    step: .1,
-                    connect: 'lower',
-                    range: {
-                        'min': [0],
-                        'max': [1]
-                    }
-                });
-                $('#slider-' + proxy.rep).Link('lower').to($('#slider-value-' + proxy.rep));
-                addedProxies.push(proxy.rep);
-            });
-        }, 5000);
+var createSliderUpdateEventHandler = function createSliderUpdateEventHandler($slider, $sliderValueDisplay) {
+    $slider.noUiSlider.on('update', function (values, handle) {
+        $sliderValueDisplay.innerHTML = values[handle];
     });
 };
-Template['paraviewControlPanel'].destroyed = function () {
-    proxiesComputation && proxiesComputation.stop();
+// Set slidern control display and number display
+var setPageOpacityDisplays = function setPageOpacityDisplays($slider, $sliderValueDisplay, opacity) {
+    $slider.noUiSlider.set(opacity);
+    $sliderValueDisplay.innerHTML = opacity;
 };
+var createSlider = function createSlider($slider, opacity) {
+    noUiSlider.create($slider, {
+        start: [opacity],
+        step: .1,
+        connect: 'lower',
+        range: {
+            'min': 0,
+            'max': 1
+        }
+    });
+};
+var isSliderCreated = function isSliderCreated(slider) {
+    return slider.className.indexOf('noUi-target') > -1;
+};
+var isTemplateDomReady = function isTemplateDomReady($slider, opacity, repId) {
+    if (addedProxies.indexOf(repId) > -1)
+        return false;
+    if (!$slider.getAttribute('data-rep-id'))
+        return false;
+    if (!opacity)
+        return false;
+    return true;
+};
+// Not sure why doesn't work with Template().instance.find() instead of JQuery select
+var isSliderElementDisplayed = function isSliderElementDisplayed() {
+    return $('.slider');
+};
+Template['paraviewControlPanel'].onRendered(function () {
+    var _this = this;
+    var elements = null, opacity = null, $slider = null, $sliderValueDisplay = null, intervalId = null;
+    this.autorun(function () {
+        elements = PV.elements.get(); // reactive, triggers Tracker.autorun
+        intervalId = Meteor.setInterval(function () {
+            if (isSliderElementDisplayed()) {
+                Meteor.clearInterval(intervalId);
+            }
+            else {
+                return;
+            }
+            elements.forEach(function (proxy) {
+                $slider = _this.find('#slider-' + proxy.rep);
+                $sliderValueDisplay = _this.find('#slider-value-' + proxy.rep);
+                opacity = PV.elementOpacities[proxy.rep];
+                if (!isTemplateDomReady($slider, opacity, proxy.rep))
+                    return;
+                if (!isSliderCreated($slider)) {
+                    createSlider($slider, opacity);
+                    addedProxies.push(proxy.rep);
+                }
+                setPageOpacityDisplays($slider, $sliderValueDisplay, opacity);
+                createSliderUpdateEventHandler($slider, $sliderValueDisplay);
+            });
+        }, 100);
+    });
+});
 //# sourceMappingURL=paraview_control_panel.js.map

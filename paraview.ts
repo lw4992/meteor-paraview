@@ -15,7 +15,7 @@ PV = (function () {
             // Same naming convention used for functions, even though all are really private within the closure
     var     elements = new ReactiveVar<iPVElement[]>([]),
             elementOpacities = <{[repId: string]: number}> {},
-            serverSessionManagerUrl = '',
+            serverSessionManagerUrl = 'http://localhost:9000/paraview',
             serverSessionUrl = '',
             scalarBar = new ReactiveVar({
                 display: false,
@@ -198,6 +198,15 @@ PV = (function () {
         _viewport = newViewport;
     };
 
+    var _unbindViewport = function _unbindViewport() {
+        _viewport && _viewport.unbind();
+    };
+
+    var _rebindViewport = function _rebindViewport() {
+        _unbindViewport();
+        _bindViewport();
+    }
+
     /**
      * Creates a _session with the ParaView _session if one does not exist already.  Reuses existing _session if one already exists.
      *
@@ -225,7 +234,8 @@ PV = (function () {
             });
         } else {
             console.log('Already connected to ParaView Server, reusing session');
-            _bindViewport();
+            _rebindViewport();
+            //_bindViewport();
             _saveServerElementInfo(asyncCallback);
             //asyncCallback && asyncCallback(null, {success: true});
         }
@@ -323,13 +333,14 @@ PV = (function () {
      */
     var resetViewport = function resetViewport(asyncCallback?:iPVCallback) {
         //console.log('** Starting resetViewPort(), PV._activeViewId = ' + PV._activeViewId);
+
         if (!_session) {
             asyncCallback && asyncCallback(null, {success: true});
             return;
         }
         //Session.get('graphicsViewportSize');  // sole purpose of this line is to enable this function to be reactive if wrapped in a Deps.autorun, so a viewport size change will trigger this function again.
         _session.call("viewport.camera.reset", [_activeViewId]).then(function (result) {
-//        console.log('viewport.camera.reset result = ' + JSON.stringify(result));
+        //console.log('viewport.camera.reset result = ' + JSON.stringify(result));
             render(null, null, asyncCallback);
         });
     };
@@ -836,6 +847,49 @@ PV = (function () {
         return !!_session;
     };
 
+    var DEFAULT_CONFIG_OPTS = {
+        serverSessionManagerUrl: "http://localhost:9000/paraview",
+        serverSessionUrl: "ws://localhost:9000/ws",
+        viewportCssId: "#paraview-viewport",
+        backgroundSetting: {
+            id: 0,
+            value: [0.9765, 0.9765, 0.9765],  // Equivalent to RGB color #f9f9f9
+            name: "Background"
+        }
+    };
+
+    var _config_opts = DEFAULT_CONFIG_OPTS;
+
+    var _beforeTasks: any[] = [
+        ['PV.initSession'],
+        ['PV.removeAllElements']
+    ];
+
+    var _afterTasks: any[] = [
+        ['PV.resetViewport']
+    ];
+
+    var configure = function configure(config) {
+        _config_opts = config;
+    };
+
+    var setBeforeTasks = function setBeforeTasks(tasks: any[]) {
+        _beforeTasks = tasks;
+    };
+
+    var setAfterTasks = function setAfterTasks(tasks: any[]) {
+        _afterTasks = tasks;
+    };
+
+    var executeTasks = function executeTasks(tasks: any[]) {
+        config(_config_opts);
+        TaskQ({isDebugging: false})
+            .deferDefs(_beforeTasks)
+            .deferDefs(tasks)
+            .deferDefs(_afterTasks)
+            .awaitAll();
+    };
+
     // public API
     return {
         // public member vars
@@ -887,6 +941,10 @@ PV = (function () {
         updateOrientationAxesVisibility: updateOrientationAxesVisibility,
         updateCenterAxesVisibility: updateCenterAxesVisibility,
         getElementFromServer: getElementFromServer,
-        isConnected: isConnected
+        isConnected: isConnected,
+        configure: configure,
+        setBeforeTasks: setBeforeTasks,
+        setAfterTasks: setAfterTasks,
+        executeTasks: executeTasks
     }
 }());
