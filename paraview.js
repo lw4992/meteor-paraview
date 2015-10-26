@@ -790,6 +790,9 @@ PV = (function () {
             .deferDefs(_afterTasks)
             .awaitAll();
     };
+    var getSessionId = function getSessionId() {
+        return _session && _session.id;
+    };
     // public API
     return {
         // public member vars
@@ -843,7 +846,8 @@ PV = (function () {
         configure: configure,
         setBeforeTasks: setBeforeTasks,
         setAfterTasks: setAfterTasks,
-        executeTasks: executeTasks
+        executeTasks: executeTasks,
+        getSessionId: getSessionId
     };
 }());
 //# sourceMappingURL=paraview.js.map

@@ -1,4 +1,4 @@
-#paraview-viewport-outer-container {
+#paraview-display-container {
     position: relative;
     height: 100%;
     /*//#paraview-viewport-container {*/
@@ -45,4 +45,12 @@
 
 #paraview-scalarbar .panel {
     margin-bottom: 0;
+}
+
+#paraview-remote-control {
+    /*display: inline-block;*/
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 10;
 }

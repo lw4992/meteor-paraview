@@ -1,10 +1,12 @@
-<template name="paraviewViewport">
-    <div id="paraview-viewport-outer-container">
+<template name="paraviewDisplay">
+    <div id="paraview-display-container">
         <div id="paraview-viewport-container">
             <!--{{> paraviewMovieProgress}}-->
             <div id="paraview-viewport" class="paraview-viewport"></div>
         </div>
-        <!--{{> paraviewSharedSessionControls}}-->
+        {{#if currentUser}}
+            {{> paraviewSharedSessionControls}}
+        {{/if}}
         {{> paraviewControlPanel}}
         <!--{{> paraviewScalarbar}}-->
     </div>

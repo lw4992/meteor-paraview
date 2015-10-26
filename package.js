@@ -8,40 +8,53 @@ Package.describe({
 
 Package.onUse(function (api) {
     api.versionsFrom('1.1.0.2');
-    api.use('templating', 'client');
+    api.use('accounts-base', 'client');
+    api.use(['mongo', 'mongo-livedata'], ['client', 'server']);
+    api.use(['templating', 'minimongo'], 'client');
     api.use('jquery', 'client');
     api.use('reactive-var', 'client');
     api.use('runelytics:nouislider@8.0.2', 'client');
-    //api.use('rcy:nouislider@7.0.7_2', 'client');
     api.use('fullflavedave:taskq@0.1.1', 'client');
     api.use('raix:handlebar-helpers@0.2.5', 'client');
+    //api.use('differential:event-hooks@1.5.0', ['client', 'server']);
 
     api.addFiles('paraview.js', 'client');
 
+    // Files copied (and tweaked) from ParaViewWeb
     api.addFiles([
-        'lib/gl-matrix-min.js'
+        'lib/gl-matrix-min.js',
+        'lib/hammer.min.js',
+        'lib/jquery.hammer.min.js',
+        'lib/autobahn.min.js',
+        'lib/vtkweb-all.js'
     ], 'client');
-    api.addFiles('lib/hammer.min.js', 'client');
-    api.addFiles('lib/jquery.hammer.min.js', 'client');
-    api.addFiles('lib/autobahn.min.js', 'client');
-    api.addFiles('lib/vtkweb-all.js', 'client');
 
     api.export(['vtkWeb'], 'client');
     api.export(['PV'], 'client');
+    api.export('ParaviewSettings', ['client', 'server']);
 
-    api.addFiles('templates/control_panel/paraview_control_panel.html', 'client');
-    api.addFiles('templates/control_panel/paraview_control_panel.css', 'client');
-    api.addFiles('templates/control_panel/paraview_control_panel.js', 'client');
+    api.addFiles('templates/paraview_display/control_panel/paraview_control_panel.html', 'client');
+    api.addFiles('templates/paraview_display/control_panel/paraview_control_panel.css', 'client');
+    api.addFiles('templates/paraview_display/control_panel/paraview_control_panel.js', 'client');
 
     api.addFiles([
-        'templates/paraview_viewport/paraview_viewport.html',
-        'templates/paraview_viewport/paraview_viewport.css',
-        'templates/paraview_viewport/movie_progress_bar/paraview_movie_progress.html',
-        'templates/paraview_viewport/movie_progress_bar/paraview_movie_progress.css',
-        'templates/paraview_viewport/paraview_scalarbar/paraview_scalarbar.html',
-        'templates/paraview_viewport/paraview_scalarbar/paraview_scalarbar.js',
-        'templates/paraview_viewport/paraview_shared_session_controls/paraview_shared_session_controls.html',
-        'templates/paraview_viewport/paraview_shared_session_controls/paraview_shared_session_controls.js'
+        'lib/collections/paraview_settings.js'
+    ], ['client', 'server']);
+
+    api.addFiles([
+        'server/publications.js',
+        'server/startup.js'
+    ], 'server');
+
+    api.addFiles([
+        'templates/paraview_display/paraview_display.html',
+        'templates/paraview_display/paraview_display.css',
+        'templates/paraview_display/movie_progress_bar/paraview_movie_progress.html',
+        'templates/paraview_display/movie_progress_bar/paraview_movie_progress.css',
+        'templates/paraview_display/paraview_scalarbar/paraview_scalarbar.html',
+        'templates/paraview_display/paraview_scalarbar/paraview_scalarbar.js',
+        'templates/paraview_display/paraview_shared_session_controls/paraview_shared_session_controls.html',
+        'templates/paraview_display/paraview_shared_session_controls/paraview_shared_session_controls.js'
     ], 'client')
 
 });

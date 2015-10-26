@@ -1,5 +1,6 @@
 <template name="paraviewSharedSessionControls">
-    <div id="paraview-remote-control" class="pull-right">
+    <div id="paraview-remote-control">
+        Other Users = {{canShare}}<br />
         <a id="enable-shared-session" href="#">Share view</a>
         <div id="now-sharing-session-area" hidden>
             <p>Now sharing view with {{sharingWith}}</p>
