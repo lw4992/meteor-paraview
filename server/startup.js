@@ -1,3 +1,4 @@
 Meteor.startup(function() {
-    ParaviewSettings.remove({});
+    console.log('Removing ParaviewSessions, only on server');
+    ParaviewSessions.remove({});
 });

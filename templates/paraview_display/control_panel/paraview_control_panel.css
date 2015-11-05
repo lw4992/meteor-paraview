@@ -107,3 +107,14 @@
     width: 10px;
     margin-right: 10px;
 }
+.no-border-margin-padding {
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+.no-border-margin-padding .panel {
+    margin-bottom: 0;
+}
+.no-border-margin-padding .panel .panel-body .last-well {
+    margin-bottom: 0;
+}

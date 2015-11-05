@@ -54,3 +54,10 @@
     right: 15px;
     z-index: 10;
 }
+
+#paraview-chat {
+    position: fixed;
+    top: 30px;
+    left: 30px;
+    z-index: 100;
+}

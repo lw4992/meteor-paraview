@@ -9,24 +9,25 @@ Package.describe({
 Package.onUse(function (api) {
     api.versionsFrom('1.1.0.2');
     api.use('accounts-base', 'client');
-    api.use(['mongo', 'mongo-livedata'], ['client', 'server']);
+    api.use(['ecmascript', 'mongo', 'mongo-livedata'], ['client', 'server']);
     api.use(['templating', 'minimongo'], 'client');
     api.use('jquery', 'client');
     api.use('reactive-var', 'client');
     api.use('runelytics:nouislider@8.0.2', 'client');
     api.use('fullflavedave:taskq@0.1.1', 'client');
     api.use('raix:handlebar-helpers@0.2.5', 'client');
+    api.use('afruth:chapp@0.1.6', ['client', 'server']);
     //api.use('differential:event-hooks@1.5.0', ['client', 'server']);
 
     api.addFiles('paraview.js', 'client');
 
     // Files copied (and tweaked) from ParaViewWeb
     api.addFiles([
-        'lib/gl-matrix-min.js',
-        'lib/hammer.min.js',
-        'lib/jquery.hammer.min.js',
-        'lib/autobahn.min.js',
-        'lib/vtkweb-all.js'
+        'lib/paraview_web/gl-matrix-min.js',
+        'lib/paraview_web/hammer.min.js',
+        'lib/paraview_web/jquery.hammer.min.js',
+        'lib/paraview_web/autobahn.min.js',
+        'lib/paraview_web/vtkweb-all.js'
     ], 'client');
 
     api.export(['vtkWeb'], 'client');
@@ -38,7 +39,8 @@ Package.onUse(function (api) {
     api.addFiles('templates/paraview_display/control_panel/paraview_control_panel.js', 'client');
 
     api.addFiles([
-        'lib/collections/paraview_settings.js'
+        'lib/collections.js',
+        'lib/methods.js'
     ], ['client', 'server']);
 
     api.addFiles([
@@ -54,7 +56,9 @@ Package.onUse(function (api) {
         'templates/paraview_display/paraview_scalarbar/paraview_scalarbar.html',
         'templates/paraview_display/paraview_scalarbar/paraview_scalarbar.js',
         'templates/paraview_display/paraview_shared_session_controls/paraview_shared_session_controls.html',
-        'templates/paraview_display/paraview_shared_session_controls/paraview_shared_session_controls.js'
+        'templates/paraview_display/paraview_shared_session_controls/paraview_shared_session_controls.js',
+        'templates/paraview_display/paraview_shared_session_controls/chat/paraview_chat.html',
+        'templates/paraview_display/paraview_shared_session_controls/chat/paraview_chat.js'
     ], 'client')
 
 });

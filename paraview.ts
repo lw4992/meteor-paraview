@@ -96,7 +96,7 @@ PV = (function () {
      *                 name: "Background"
      *         });
      */
-    var config = function config(opts:iPVInitOpts, asyncCallback?:iPVCallback) {
+    var config = function config(opts:iPVConfigOpts, asyncCallback?:iPVCallback) {
         //console.log('** Starting config(), configOpts = ' + JSON.stringify(opts, null, 4));
         serverSessionManagerUrl = opts.serverSessionManagerUrl;
         serverSessionUrl = opts.serverSessionUrl;
@@ -190,7 +190,7 @@ PV = (function () {
             session: newSession || _session,
             view: -1,
             enableInteractions: true,
-            renderer: 'image'  //image or webgl
+            renderer: 'image'  //image, vgl, or webgl
         };
 
         var newViewport = <iPVViewport> vtkWeb.createViewport(viewportOptions);

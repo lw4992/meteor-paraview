@@ -151,7 +151,7 @@ PV = (function () {
             session: newSession || _session,
             view: -1,
             enableInteractions: true,
-            renderer: 'image' //image or webgl
+            renderer: 'image' //image, vgl, or webgl
         };
         var newViewport = vtkWeb.createViewport(viewportOptions);
         newViewport.bind(_viewportCssId);
