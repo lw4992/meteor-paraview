@@ -14,7 +14,7 @@ Package.onUse(function (api) {
     api.use('jquery', 'client');
     api.use('reactive-var', 'client');
     api.use('runelytics:nouislider@8.0.2', 'client');
-    api.use('fullflavedave:taskq@0.1.1', 'client');
+    api.use('fullflavedave:taskq@0.1.2', 'client');
     api.use('raix:handlebar-helpers@0.2.5', 'client');
 
     api.addFiles('paraview.js', 'client');
