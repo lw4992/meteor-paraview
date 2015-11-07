@@ -9,7 +9,7 @@ Package.describe({
 Package.onUse(function (api) {
     api.versionsFrom('1.1.0.2');
     api.use('accounts-base', 'client');
-    api.use(['ecmascript', 'mongo', 'mongo-livedata'], ['client', 'server']);
+    api.use(['ecmascript@0.1.6', 'mongo', 'mongo-livedata'], ['client', 'server']);
     api.use(['templating', 'minimongo'], 'client');
     api.use('jquery', 'client');
     api.use('reactive-var', 'client');
