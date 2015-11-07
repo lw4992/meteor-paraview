@@ -70,11 +70,13 @@ var startSharingSession = function startSharingSession(proposerUsername) {
     thisUserSession.sharedState = SharedStateVals[SharedStateVals.JOINED];
     thisUserSession.partnerUsername = proposerUsername;
     Meteor.call('upsertParaviewSession', thisUserSession);
+    Session.set('hasJoinedParaviewSessionOf', proposerUsername);
     var partnerUserSession = ParaviewSessions.findOne({ username: proposerUsername });
     partnerUserSession.sharedState = SharedStateVals[SharedStateVals.SHARED];
     partnerUserSession.partnerUsername = Meteor.user().username;
     Meteor.call('upsertParaviewSession', partnerUserSession);
     setViewportToSmallest(partnerUserSession);
+    initializeSimpleChat();
     refreshIntervalId = Meteor.setInterval(function () {
         //console.log('rendering for joiner');
         PV.render(); // PV.render() uses dimensions of #paraview-viewport by default
@@ -99,23 +101,32 @@ var getPartnerUsername = function getPartnerUsername() {
     if (paraviewSettings)
         return paraviewSettings.partnerUsername;
 };
+var initializeSimpleChat = function initializeSimpleChat() {
+    SimpleChat.configure({
+        roomId: 'paraviewSimpleChat',
+        userId: Meteor.user().username
+    });
+    SimpleChat.removeAllMessages();
+};
 // This client is in proposed state and other user accepts/starts sharing
 var listenForSharedSession = function listenForSharedSession() {
     var thisUserSession = null, partnerSession = null;
     templateInstance.autorun(function () {
         thisUserSession = getSessionFromSharedState(SharedStateVals[SharedStateVals.SHARED]);
-        console.log('thisUserSession = ' + JSON.stringify(thisUserSession));
+        //console.log('thisUserSession = ' + JSON.stringify(thisUserSession));
         if (thisUserSession) {
-            console.log('about to set refresh interval');
+            //console.log('about to set refresh interval');
             refreshIntervalId = Meteor.setInterval(function () {
-                console.log('rendering for proposer');
+                //console.log('rendering for proposer');
                 PV.render(); // PV.render() uses dimensions of #paraview-viewport by default
             }, 100);
             partnerSession = ParaviewSessions.findOne({ username: thisUserSession.partnerUsername });
             setViewportToSmallest(partnerSession);
+            initializeSimpleChat();
+            Session.set('hasSharedParaviewSessionWith', thisUserSession.partnerUsername);
         }
         else {
-            console.log('clearing interval in listener');
+            //            console.log('clearing interval in listener');
             Meteor.clearInterval(refreshIntervalId);
         }
     });
@@ -131,7 +142,9 @@ var listenForProposedSharing = function () {
 var listenForInitializedSharedState = function listenForInitializedSharedState() {
     templateInstance.autorun(function () {
         if (hasSharedState(SharedStateVals[SharedStateVals.INITIALIZED])) {
-            console.log('Initializing!!!');
+            //console.log('Initializing!!!');
+            Session.set('hasJoinedParaviewSessionOf', null);
+            Session.set('hasSharedParaviewSessionWith', null);
             templateInstance.$('#proposed-to-modal').modal('hide');
             initializeParaviewViewport();
         }
@@ -156,7 +169,7 @@ var initializeParaviewSessionInfo = function initializeParaviewSessionInfo(usern
     Meteor.call('upsertParaviewSession', session);
 };
 var initializeParaviewViewport = function initializeParaviewViewport() {
-    console.log('Clearing refreshIntervalId in initialize ****** ');
+    //console.log('Clearing refreshIntervalId in initialize ****** ');
     Meteor.clearInterval(refreshIntervalId);
     Meteor.setTimeout(function () { Meteor.clearInterval(refreshIntervalId); }, 10);
     Meteor.setTimeout(function () { Meteor.clearInterval(refreshIntervalId); }, 20);
@@ -193,6 +206,8 @@ var removeLoggedOutParaviewSessions = function removeLoggedOutParaviewSessions()
     });
 };
 var initialize = function initialize() {
+    Session.set('hasJoinedParaviewSessionOf', null);
+    Session.set('hasSharedParaviewSessionWith', null);
     removeLoggedOutParaviewSessions();
     initializeParaviewViewport();
     initializeListeners();
@@ -200,13 +215,11 @@ var initialize = function initialize() {
 Template['paraviewSharedSessionControls'].onCreated(function () {
     Meteor.subscribe('paraviewSettings');
     Meteor.subscribe('userStatus');
-    Session.set('chapp-username', 'Desired username'); //you could set the user name on user login
-    Session.set('chapp-docid', 'uniqueIdentifier'); //The room identifier. Iron router's before action can be a great spot to set this.
 });
 Template['paraviewSharedSessionControls'].onRendered(function () {
     var _this = this;
     templateInstance = this; // set page-scoped var
-    waitForTruthy(function () { return Meteor.user(); }, function () { return initialize(); });
+    waitForTruthy(Meteor.user, initialize);
     // This block ensures that the client's current paraview info is saved, including paraview-viewport-container size.
     // Happens on page rendering and when page is resized
     waitForTruthy(PV.isConnected, function () {
@@ -264,7 +277,6 @@ Template['paraviewSharedSessionControls'].events({
         initializeParaviewSessionInfo(partnerUsername);
     },
     'click [data-reset-sessions]': function (event, template) {
-        console.log('resetting sessions!!');
         initializeParaviewSessionInfo();
         var partnerUsername = event.target.getAttribute('data-partner-username');
         initializeParaviewSessionInfo(partnerUsername);

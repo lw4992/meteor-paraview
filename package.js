@@ -1,6 +1,6 @@
 Package.describe({
     name: 'fullflavedave:paraview',
-    version: '0.1.2',
+    version: '0.1.3',
     summary: 'A user-friendly wrapper for the ParaViewWeb JavaScript API',
     git: 'https://github.com/fullflavedave/meteor-paraview.git',
     documentation: 'README.md'
@@ -16,8 +16,6 @@ Package.onUse(function (api) {
     api.use('runelytics:nouislider@8.0.2', 'client');
     api.use('fullflavedave:taskq@0.1.1', 'client');
     api.use('raix:handlebar-helpers@0.2.5', 'client');
-    api.use('afruth:chapp@0.1.6', ['client', 'server']);
-    //api.use('differential:event-hooks@1.5.0', ['client', 'server']);
 
     api.addFiles('paraview.js', 'client');
 
@@ -33,6 +31,9 @@ Package.onUse(function (api) {
     api.export(['vtkWeb'], 'client');
     api.export(['PV'], 'client');
     api.export('ParaviewSettings', ['client', 'server']);
+
+    api.export('SimpleChat', 'client');
+    api.export('SimpleChatMessages', ['client', 'server']);
 
     api.addFiles('templates/paraview_display/control_panel/paraview_control_panel.html', 'client');
     api.addFiles('templates/paraview_display/control_panel/paraview_control_panel.css', 'client');
@@ -56,11 +57,25 @@ Package.onUse(function (api) {
         'templates/paraview_display/paraview_scalarbar/paraview_scalarbar.html',
         'templates/paraview_display/paraview_scalarbar/paraview_scalarbar.js',
         'templates/paraview_display/paraview_shared_session_controls/paraview_shared_session_controls.html',
-        'templates/paraview_display/paraview_shared_session_controls/paraview_shared_session_controls.js',
-        'templates/paraview_display/paraview_shared_session_controls/chat/paraview_chat.html',
-        'templates/paraview_display/paraview_shared_session_controls/chat/paraview_chat.js'
-    ], 'client')
+        'templates/paraview_display/paraview_shared_session_controls/paraview_shared_session_controls.js'
+    ], 'client');
 
+    // For shared console
+    api.addFiles([
+        'templates/paraview_display/paraview_shared_session_controls/shared_console/paraview_shared_console.html',
+        'templates/paraview_display/paraview_shared_session_controls/shared_console/paraview_shared_console.js'
+    ], 'client');
+
+    // For simpleChat, eventually split into separate package
+    api.use('momentjs:moment@2.10.6', 'client');
+    api.use('mizzao:jquery-ui@1.11.4', 'client');
+
+    api.addFiles([
+        'templates/paraview_display/paraview_shared_session_controls/chat/simple_chat_panel.html',
+        'templates/paraview_display/paraview_shared_session_controls/chat/simple_chat_panel.js',
+        'templates/paraview_display/paraview_shared_session_controls/chat/simple_chat_panel.css',
+        'templates/paraview_display/paraview_shared_session_controls/chat/simple_chat.js'
+    ], 'client');
 });
 
 Package.onTest(function (api) {

@@ -36,9 +36,6 @@
                 <button type="submit" data-partner-username="{{partnerUsername}}" class="btn btn-default" data-reset-sessions>Cancel</button>
             </div>
         {{/if}}
-
-        {{>paraviewChat}}
-
     </div>
 
     <div id="proposed-to-modal" class="modal fade">
@@ -54,12 +51,9 @@
                 <div class="modal-footer">
                     <button type="submit" data-partner-username="{{partnerUsername}}" class="btn btn-default" data-decline-proposal data-dismiss="modal">Decline</button>
                     <button type="submit" data-partner-username="{{partnerUsername}}" class="btn btn-primary" data-accept-proposal data-dismiss="modal">Accept</button>
-                    <!--<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
-                    <!--<button type="button" class="btn btn-primary">Save changes</button>-->
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
 
 </template>
-

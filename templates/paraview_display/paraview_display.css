@@ -55,9 +55,20 @@
     z-index: 10;
 }
 
-#paraview-chat {
+/** For the shared console **/
+#paraview-shared-console {
+    width: 500px;
     position: fixed;
-    top: 30px;
+    bottom: 30px;
     left: 30px;
-    z-index: 100;
+    z-index: 1000;
+}
+
+#paraview-shared-console .panel-heading {
+    cursor: pointer;
+}
+
+#paraview-shared-console .panel-body {
+    height: 300px;
+    overflow-y: auto;
 }

@@ -1,0 +1,18 @@
+<template name="paraviewSharedConsole">
+    <div id="paraview-shared-console" class="panel panel-info">
+        <div class="panel-heading">
+            <h3 class="panel-title">Simulation stdout for {{partnerUsername}}</h3>
+        </div>
+        <div class="panel-body">
+            <ul id="log-console-content" class="list-unstyled">
+                {{#each logEntries}}
+                    {{>paraviewLogEntry}}
+                {{/each}}
+            </ul>
+        </div>
+    </div>
+</template>
+
+<template name="paraviewLogEntry">
+    <li>[{{formatDate timestamp}}] <div class="log-console-text">{{text}}</div></li>
+</template>
