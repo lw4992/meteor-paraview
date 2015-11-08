@@ -1,13 +1,13 @@
 Package.describe({
     name: 'fullflavedave:paraview',
-    version: '0.1.3',
+    version: '0.1.4',
     summary: 'A user-friendly wrapper for the ParaViewWeb JavaScript API',
     git: 'https://github.com/fullflavedave/meteor-paraview.git',
     documentation: 'README.md'
 });
 
 Package.onUse(function (api) {
-    api.versionsFrom('1.1.0.2');
+    api.versionsFrom('1.2.1');
     api.use('accounts-base', 'client');
     api.use(['ecmascript@0.1.6', 'mongo', 'mongo-livedata'], ['client', 'server']);
     api.use(['templating', 'minimongo'], 'client');
