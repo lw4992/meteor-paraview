@@ -47,7 +47,7 @@
     margin-bottom: 0;
 }
 
-#paraview-remote-control {
+#paraview-shared-session-controls {
     /*display: inline-block;*/
     position: absolute;
     top: 15px;

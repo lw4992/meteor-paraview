@@ -24,6 +24,9 @@ var resizePanel = function resizePanel(templateInstance) {
     var panelFooterHeight = templateInstance.$('#simple-chat .panel-footer').outerHeight();
 
     var panelBodyHeight = panelTotalHeight - panelHeadingHeight - panelFooterHeight;
+    console.log('panelTotalHeight = ' + panelTotalHeight);
+    console.log('panelHeadingHeight = ' + panelHeadingHeight);
+    console.log('panelFoooterHeight = ' + panelFooterHeight);
     console.log('setting panelBodyHeight = ' + panelBodyHeight);
     templateInstance.$('#simple-chat .panel-body').outerHeight(panelBodyHeight);
 };
@@ -38,7 +41,7 @@ Template['simpleChatPanel'].onRendered(function () {
         scrollMessagesDisplay(this);
     });
 
-    resizePanel(this);
+    Meteor.setTimeout(() => resizePanel(this), 500);
 });
 
 Template['simpleChatPanel'].onDestroyed(function () {
@@ -49,6 +52,7 @@ Template['simpleChatPanel'].events({
     'submit #simple-chat-form': function (event:Meteor.Event, templateInstance:Blaze.TemplateInstance) {
         event.preventDefault();
         var messageText = templateInstance.$('#simple-chat-text-box').val();
+        console.log('submitting simple-chat-form, messageText = ' + messageText);
         if (messageText) SimpleChat.send(messageText);
         templateInstance.$('#simple-chat-text-box').val('');
     }

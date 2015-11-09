@@ -19,6 +19,9 @@ var resizePanel = function resizePanel(templateInstance) {
     var panelHeadingHeight = templateInstance.$('#simple-chat .panel-heading').outerHeight();
     var panelFooterHeight = templateInstance.$('#simple-chat .panel-footer').outerHeight();
     var panelBodyHeight = panelTotalHeight - panelHeadingHeight - panelFooterHeight;
+    console.log('panelTotalHeight = ' + panelTotalHeight);
+    console.log('panelHeadingHeight = ' + panelHeadingHeight);
+    console.log('panelFoooterHeight = ' + panelFooterHeight);
     console.log('setting panelBodyHeight = ' + panelBodyHeight);
     templateInstance.$('#simple-chat .panel-body').outerHeight(panelBodyHeight);
 };
@@ -32,7 +35,7 @@ Template['simpleChatPanel'].onRendered(function () {
         messages.count(); // have to actually do something with messages to trigger autorun
         scrollMessagesDisplay(_this);
     });
-    resizePanel(this);
+    Meteor.setTimeout(function () { return resizePanel(_this); }, 500);
 });
 Template['simpleChatPanel'].onDestroyed(function () {
 });
@@ -40,6 +43,7 @@ Template['simpleChatPanel'].events({
     'submit #simple-chat-form': function (event, templateInstance) {
         event.preventDefault();
         var messageText = templateInstance.$('#simple-chat-text-box').val();
+        console.log('submitting simple-chat-form, messageText = ' + messageText);
         if (messageText)
             SimpleChat.send(messageText);
         templateInstance.$('#simple-chat-text-box').val('');

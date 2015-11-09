@@ -1,6 +1,6 @@
 Package.describe({
     name: 'fullflavedave:paraview',
-    version: '0.1.4',
+    version: '0.1.5',
     summary: 'A user-friendly wrapper for the ParaViewWeb JavaScript API',
     git: 'https://github.com/fullflavedave/meteor-paraview.git',
     documentation: 'README.md'
@@ -30,7 +30,7 @@ Package.onUse(function (api) {
 
     api.export(['vtkWeb'], 'client');
     api.export(['PV'], 'client');
-    api.export('ParaviewSettings', ['client', 'server']);
+    api.export('ParaviewSessions', ['client', 'server']);
 
     api.export('SimpleChat', 'client');
     api.export('SimpleChatMessages', ['client', 'server']);

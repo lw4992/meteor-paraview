@@ -94,12 +94,12 @@ var hasSharedState = function hasSharedState(sharedState) {
     return !!getSessionFromSharedState(sharedState);
 };
 var getPartnerUsername = function getPartnerUsername() {
-    var paraviewSettings = ParaviewSessions.findOne({
+    var paraviewSessions = ParaviewSessions.findOne({
         username: Meteor.user().username,
         page: window.location.pathname
     }, { sort: { timestamp: 'desc' } });
-    if (paraviewSettings)
-        return paraviewSettings.partnerUsername;
+    if (paraviewSessions)
+        return paraviewSessions.partnerUsername;
 };
 var initializeSimpleChat = function initializeSimpleChat() {
     SimpleChat.configure({
@@ -231,13 +231,16 @@ Template['paraviewSharedSessionControls'].onRendered(function () {
 });
 Template['paraviewSharedSessionControls'].helpers({
     canShare: function () {
+        console.log('canShare(), has initialized state = ' + hasSharedState(SharedStateVals[SharedStateVals.INITIALIZED]));
         if (!hasSharedState(SharedStateVals[SharedStateVals.INITIALIZED]))
             return false;
+        console.log('canShare(), checking for other users ');
         var otherUsers = ParaviewSessions.findOne({
             page: window.location.pathname,
             username: { $ne: Meteor.user().username },
             sharedState: SharedStateVals[SharedStateVals.INITIALIZED]
         });
+        console.log('canShare(), otherUsers = ' + !!otherUsers);
         return !!otherUsers;
     },
     otherUsers: function () {

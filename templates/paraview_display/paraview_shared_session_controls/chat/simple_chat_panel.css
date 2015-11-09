@@ -1,6 +1,7 @@
 #simple-chat {
     width: 100%;
     height: 100%;
+    margin-bottom: 0;
 }
 
 #simple-chat .panel-heading {
@@ -11,8 +12,16 @@
     overflow-y: auto;
 }
 
+#simple-chat-footer {
+    /*border: solid 1px gray;*/
+}
+
+#simple-chat-text-box-col {
+    padding: 0;
+}
+
 #simple-chat-text-box {
-    width: 410px;
+    width: 100%;
 }
 
 #simple-chat-messages .simple-chat-message-group {
@@ -29,4 +38,13 @@
     display: inline-block;
     font-weight: 200;
     margin-left: 20px;
+}
+
+.simple-chat-message-section {
+    margin: 0 0 10px 0;
+    padding: 0;
+}
+
+.simple-chat-message-section p {
+    margin: 0;
 }
