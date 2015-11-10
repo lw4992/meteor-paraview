@@ -1,6 +1,5 @@
-/// <reference path='../../../../../.typescript/package_defs/all-definitions.d.ts'/>
-/// <reference path='../../../../.typescript/custom_defs/all-custom-definitions.d.ts'/>
-/// <reference path='../../layouts/two_col_layout.ts'/>
+/// <reference path='../../../../../../meteor-client-app/app/.typescript/package_defs/all-definitions.d.ts' />
+/// <reference path='../../../../../../meteor-client-app/app/.typescript/custom_defs/all-custom-definitions.d.ts' />
 Template['paraviewScalarbar']['helpers']({
     displayScalarBar: function () {
         return PV.scalarBar.get().display;

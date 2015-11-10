@@ -771,7 +771,8 @@ PV = (function () {
         ['PV.removeAllElements']
     ];
     var _afterTasks = [
-        ['PV.resetViewport']
+        ['PV.resetViewport'],
+        ['PV.hideLoadingCover']
     ];
     var configure = function configure(config) {
         _config_opts = config;
@@ -792,6 +793,17 @@ PV = (function () {
     };
     var getSessionId = function getSessionId() {
         return _session && _session.id;
+    };
+    var hideLoadingCover = function hideLoadingCover(asyncCallback) {
+        var selector = '#paraview-loading';
+        Meteor.setTimeout(function () {
+            $(selector).hide();
+            asyncCallback && asyncCallback(null, { success: true });
+        }, 300);
+    };
+    var setScalarBar = function setScalarBar(options, asyncCallback) {
+        scalarBar.set(options);
+        asyncCallback && asyncCallback(null, { success: true });
     };
     // public API
     return {
@@ -847,7 +859,8 @@ PV = (function () {
         setBeforeTasks: setBeforeTasks,
         setAfterTasks: setAfterTasks,
         executeTasks: executeTasks,
-        getSessionId: getSessionId
+        getSessionId: getSessionId,
+        setScalarBar: setScalarBar
     };
 }());
 //# sourceMappingURL=paraview.js.map

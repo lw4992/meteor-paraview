@@ -17,7 +17,7 @@ PV = (function () {
             elementOpacities = <{[repId: string]: number}> {},
             serverSessionManagerUrl = 'http://localhost:9000/paraview',
             serverSessionUrl = '',
-            scalarBar = new ReactiveVar({
+            scalarBar = new ReactiveVar<iPVScalarBarOpts>({
                 display: false,
                 areDiscreteValues: false,
                 labelsAndColors: []
@@ -96,7 +96,7 @@ PV = (function () {
      *                 name: "Background"
      *         });
      */
-    var config = function config(opts:iPVConfigOpts, asyncCallback?:iPVCallback) {
+    var config = function config(opts:iPVInitOpts, asyncCallback?:iPVCallback) {
         //console.log('** Starting config(), configOpts = ' + JSON.stringify(opts, null, 4));
         serverSessionManagerUrl = opts.serverSessionManagerUrl;
         serverSessionUrl = opts.serverSessionUrl;
@@ -866,7 +866,8 @@ PV = (function () {
     ];
 
     var _afterTasks: any[] = [
-        ['PV.resetViewport']
+        ['PV.resetViewport'],
+        ['PV.hideLoadingCover']
     ];
 
     var configure = function configure(config) {
@@ -892,6 +893,19 @@ PV = (function () {
 
     var getSessionId = function getSessionId() {
         return _session && _session.id;
+    };
+
+    var hideLoadingCover = function hideLoadingCover(asyncCallback?:iPVCallback) {
+        var selector = '#paraview-loading';
+        Meteor.setTimeout(function() {
+            $(selector).hide();
+            asyncCallback && asyncCallback(null, {success: true});
+        }, 300);
+    };
+
+    var setScalarBar = function setScalarBar(options: iPVScalarBarOpts, asyncCallback?:iPVCallback) {
+        scalarBar.set(options);
+        asyncCallback && asyncCallback(null, {success: true});
     };
 
     // public API
@@ -950,6 +964,7 @@ PV = (function () {
         setBeforeTasks: setBeforeTasks,
         setAfterTasks: setAfterTasks,
         executeTasks: executeTasks,
-        getSessionId: getSessionId
+        getSessionId: getSessionId,
+        setScalarBar: setScalarBar
     }
 }());

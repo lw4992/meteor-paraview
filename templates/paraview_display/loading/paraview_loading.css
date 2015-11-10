@@ -1,0 +1,12 @@
+#paraview-loading {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background-color: #f9f9f9;
+    z-index: 1000;
+    top: 0;
+}
+
+#paraview-loading #loading-container {
+    z-index: 101;
+}

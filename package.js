@@ -16,6 +16,7 @@ Package.onUse(function (api) {
     api.use('runelytics:nouislider@8.0.2', 'client');
     api.use('fullflavedave:taskq@0.1.2', 'client');
     api.use('raix:handlebar-helpers@0.2.5', 'client');
+    api.use('sacha:spin@2.3.1', 'client');
 
     api.addFiles('paraview.js', 'client');
 
@@ -54,16 +55,18 @@ Package.onUse(function (api) {
         'templates/paraview_display/paraview_display.css',
         'templates/paraview_display/movie_progress_bar/paraview_movie_progress.html',
         'templates/paraview_display/movie_progress_bar/paraview_movie_progress.css',
-        'templates/paraview_display/paraview_scalarbar/paraview_scalarbar.html',
-        'templates/paraview_display/paraview_scalarbar/paraview_scalarbar.js',
-        'templates/paraview_display/paraview_shared_session_controls/paraview_shared_session_controls.html',
-        'templates/paraview_display/paraview_shared_session_controls/paraview_shared_session_controls.js'
+        'templates/paraview_display/scalarbar/paraview_scalarbar.html',
+        'templates/paraview_display/scalarbar/paraview_scalarbar.js',
+        'templates/paraview_display/loading/paraview_loading.html',
+        'templates/paraview_display/loading/paraview_loading.css',
+        'templates/paraview_display/shared_session_controls/paraview_shared_session_controls.html',
+        'templates/paraview_display/shared_session_controls/paraview_shared_session_controls.js'
     ], 'client');
 
     // For shared console
     api.addFiles([
-        'templates/paraview_display/paraview_shared_session_controls/shared_console/paraview_shared_console.html',
-        'templates/paraview_display/paraview_shared_session_controls/shared_console/paraview_shared_console.js'
+        'templates/paraview_display/shared_session_controls/shared_console/paraview_shared_console.html',
+        'templates/paraview_display/shared_session_controls/shared_console/paraview_shared_console.js'
     ], 'client');
 
     // For simpleChat, eventually split into separate package
@@ -71,11 +74,12 @@ Package.onUse(function (api) {
     api.use('mizzao:jquery-ui@1.11.4', 'client');
 
     api.addFiles([
-        'templates/paraview_display/paraview_shared_session_controls/chat/simple_chat_panel.html',
-        'templates/paraview_display/paraview_shared_session_controls/chat/simple_chat_panel.js',
-        'templates/paraview_display/paraview_shared_session_controls/chat/simple_chat_panel.css',
-        'templates/paraview_display/paraview_shared_session_controls/chat/simple_chat.js'
+        'templates/paraview_display/shared_session_controls/chat/simple_chat_panel.html',
+        'templates/paraview_display/shared_session_controls/chat/simple_chat_panel.js',
+        'templates/paraview_display/shared_session_controls/chat/simple_chat_panel.css',
+        'templates/paraview_display/shared_session_controls/chat/simple_chat.js'
     ], 'client');
+
 });
 
 Package.onTest(function (api) {
