@@ -68,10 +68,14 @@ PV = (function () {
      */
     var config = function config(opts, asyncCallback) {
         //console.log('** Starting config(), configOpts = ' + JSON.stringify(opts, null, 4));
-        serverSessionManagerUrl = opts.serverSessionManagerUrl;
-        serverSessionUrl = opts.serverSessionUrl;
-        _viewportCssId = opts.viewportCssId;
-        _backgroundSetting = opts.backgroundSetting;
+        if (opts.serverSessionManagerUrl)
+            serverSessionManagerUrl = opts.serverSessionManagerUrl;
+        if (opts.serverSessionUrl)
+            serverSessionUrl = opts.serverSessionUrl;
+        if (opts.viewportCssId)
+            _viewportCssId = opts.viewportCssId;
+        if (opts.backgroundSetting)
+            _backgroundSetting = opts.backgroundSetting;
         asyncCallback && asyncCallback(null, { success: true });
     };
     /**
@@ -146,7 +150,7 @@ PV = (function () {
     };
     var _bindViewport = function _bindViewport(newSession) {
         //console.log('** Starting PV._bindViewport(), _viewportCssId = ' + _viewportCssId);
-        //console.log('PV._bindViewport(), _session = ' + _session);
+        console.log('PV._bindViewport(), _session._id = ' + _session._id);
         var viewportOptions = {
             session: newSession || _session,
             view: -1,
@@ -160,7 +164,7 @@ PV = (function () {
     var _unbindViewport = function _unbindViewport() {
         _viewport && _viewport.unbind();
     };
-    var _rebindViewport = function _rebindViewport() {
+    var rebindViewport = function rebindViewport() {
         _unbindViewport();
         _bindViewport();
     };
@@ -192,7 +196,7 @@ PV = (function () {
         }
         else {
             console.log('Already connected to ParaView Server, reusing session');
-            _rebindViewport();
+            rebindViewport();
             //_bindViewport();
             _saveServerElementInfo(asyncCallback);
         }
@@ -792,7 +796,10 @@ PV = (function () {
             .awaitAll();
     };
     var getSessionId = function getSessionId() {
-        return _session && _session.id;
+        return _session && _session._id;
+    };
+    var setSessionId = function setSessionId(sessionId) {
+        _session._id = sessionId;
     };
     var hideLoadingCover = function hideLoadingCover(asyncCallback) {
         var selector = '#paraview-loading';
@@ -860,6 +867,8 @@ PV = (function () {
         setAfterTasks: setAfterTasks,
         executeTasks: executeTasks,
         getSessionId: getSessionId,
+        setSessionId: setSessionId,
+        rebindViewport: rebindViewport,
         setScalarBar: setScalarBar
     };
 }());

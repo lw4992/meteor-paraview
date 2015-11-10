@@ -19,7 +19,8 @@ enum SharedStateVals { INITIALIZED /* 0 */, PROPOSING /* 1 */, PROPOSED_TO /* 2 
  * It's much easier to control the size of #paraview-viewport indirectly by controlling the size of the container, #paraview-viewport-container
  */
 var refreshIntervalId:number = null,
-    templateInstance:Blaze.TemplateInstance;
+    templateInstance:Blaze.TemplateInstance,
+    originalParaviewSessionId:number = null;
 
 var waitForEquals = function waitForEquals(currentValFunc:Function, desiredValue:any, callback:Function, timeoutInMillis = 10000) {
     var checkInterval = 100;
@@ -85,6 +86,12 @@ var startSharingSession = function startSharingSession(proposerUsername) {
     partnerUserSession.sharedState = SharedStateVals[SharedStateVals.SHARED];
     partnerUserSession.partnerUsername = Meteor.user().username;
     Meteor.call('upsertParaviewSession', partnerUserSession);
+
+    console.log('partnerUserSession._id = ' + partnerUserSession._id);
+
+    originalParaviewSessionId = PV.getSessionId();
+    PV.setSessionId(partnerUserSession.session._id);
+    PV.rebindViewport();
 
     setViewportToSmallest(partnerUserSession);
 
@@ -193,6 +200,13 @@ var initializeParaviewSessionInfo = function initializeParaviewSessionInfo(usern
 };
 
 var initializeParaviewViewport = function initializeParaviewViewport() {
+    //TODO: poor test to see if had joined another session and needs to return to its own session
+    if (originalParaviewSessionId) {
+        PV.setSessionId(originalParaviewSessionId);
+        PV.rebindViewport();
+        originalParaviewSessionId = null;
+    }
+
     //console.log('Clearing refreshIntervalId in initialize ****** ');
     Meteor.clearInterval(refreshIntervalId);
     Meteor.setTimeout(() => { Meteor.clearInterval(refreshIntervalId) }, 10);
