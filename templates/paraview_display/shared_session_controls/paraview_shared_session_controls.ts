@@ -7,11 +7,16 @@ interface ParaviewSessionsDAO {
     page?: string;
     viewportWidth?: number;
     viewportHeight?: number;
-    session?: {};
+    session?: { _id: number };
     sharedState?: string;
     partnerUsername?: string;
     timestamp?: number;
 }
+declare var SimpleChat: {
+    configure: (any) => void;
+    removeAllMessages: () => void;
+};
+
 declare var ParaviewSessions:Mongo.Collection<ParaviewSessionsDAO>;
 enum SharedStateVals { INITIALIZED /* 0 */, PROPOSING /* 1 */, PROPOSED_TO /* 2 */, SHARED /* 3 */, JOINED /* 4 */, STOPPED /* 5 */ };
 
@@ -20,6 +25,9 @@ enum SharedStateVals { INITIALIZED /* 0 */, PROPOSING /* 1 */, PROPOSED_TO /* 2 
  */
 var refreshIntervalId:number = null,
     templateInstance:Blaze.TemplateInstance,
+    isInitializing = false,
+    paraviewSettingsHandle = null,
+    userStatusHandle = null,
     originalParaviewSessionId:number = null;
 
 var waitForEquals = function waitForEquals(currentValFunc:Function, desiredValue:any, callback:Function, timeoutInMillis = 10000) {
@@ -106,7 +114,7 @@ var startSharingSession = function startSharingSession(proposerUsername) {
 var getSessionFromSharedState = function getSessionFromSharedState(sharedState: string) {
     var paraviewSession = ParaviewSessions.findOne({
         username: Meteor.user().username,
-        page: window.location.pathname,
+        //page: window.location.pathname,
         sharedState: sharedState
     }, {sort: {timestamp: 'desc'}});
     return paraviewSession;
@@ -119,7 +127,7 @@ var hasSharedState = function hasSharedState(sharedState:string) {
 var getPartnerUsername = function getPartnerUsername() {
     var paraviewSessions = ParaviewSessions.findOne({
         username: Meteor.user().username,
-        page: window.location.pathname
+        //page: window.location.pathname
     }, {sort: {timestamp: 'desc'}});
     if (paraviewSessions) return paraviewSessions.partnerUsername;
 };
@@ -196,7 +204,13 @@ var initializeParaviewSessionInfo = function initializeParaviewSessionInfo(usern
     var session = getInitializedParaviewSessionInfo();
     if (username) session.username = username;
 
-    Meteor.call('upsertParaviewSession', session);
+    Meteor.call('upsertParaviewSession', session, (error, result) => {
+        if (error) {
+            console.error(error);
+            return;
+        }
+        isInitializing = false;
+    });
 };
 
 var initializeParaviewViewport = function initializeParaviewViewport() {
@@ -258,8 +272,15 @@ var initialize = function initialize() {
 };
 
 Template['paraviewSharedSessionControls'].onCreated(function () {
-    Meteor.subscribe('paraviewSettings');
-    Meteor.subscribe('userStatus');
+    paraviewSettingsHandle = Meteor.subscribe('paraviewSettings');
+    userStatusHandle = Meteor.subscribe('userStatus');
+    isInitializing = true;
+
+    //var intervalId = Meteor.setInterval(() => {
+    //    var page = window.location.pathname;
+    //    console.log('page = ' + page);
+    //    if (page === '/geothermalsimulation') Meteor.clearInterval(intervalId);
+    //}, 10);
 });
 
 Template['paraviewSharedSessionControls'].onRendered(function () {
@@ -277,25 +298,44 @@ Template['paraviewSharedSessionControls'].onRendered(function () {
     });
 });
 
-Template['paraviewSharedSessionControls'].helpers({
-    canShare: function () {
-        console.log('canShare(), has initialized state = ' + hasSharedState(SharedStateVals[SharedStateVals.INITIALIZED]));
-        if (!hasSharedState(SharedStateVals[SharedStateVals.INITIALIZED])) return false;
+var thisUserCanShare = function thisUserCanShare(paraviewSession) {
+    return isInitializing || !!paraviewSession;
+};
 
-        console.log('canShare(), checking for other users ');
+Template['paraviewSharedSessionControls'].helpers({
+
+    //TODO: fix this so it only returns
+    canShare: function () {
+        //var allParaviewSessions = ParaviewSessions.find();
+        //console.log('allParaviewSessions = ' + allParaviewSessions);
+
+        var paraviewSession = ParaviewSessions.findOne({
+            username: Meteor.user().username,
+            //page: window.location.pathname,
+            sharedState: SharedStateVals[SharedStateVals.INITIALIZED]
+        }, {sort: {timestamp: 'desc'}});
+
+        //console.log('canShare(), thisUserCanShare() = ' + thisUserCanShare(paraviewSession));
+
+        if (!thisUserCanShare(paraviewSession)) return false;
+
+        //console.log('canShare(), checking for other users, window.location.pathname = ' + window.location.pathname);
+        //console.log('Meteor.user().username = ' + Meteor.user().username);
 
         var otherUsers = ParaviewSessions.findOne({
-            page: window.location.pathname,
+            //page: window.location.pathname,
             username: {$ne: Meteor.user().username},
             sharedState: SharedStateVals[SharedStateVals.INITIALIZED]
         });
-        console.log('canShare(), otherUsers = ' + !!otherUsers);
+
+        //console.log('Stringified, otherUsers = ' + JSON.stringify(otherUsers, null, 4));
+        //console.log('canShare(), otherUsers = ' + !!otherUsers);
 
         return !!otherUsers;
     },
     otherUsers: function () {
         var otherUsers = ParaviewSessions.find({
-            page: window.location.pathname,
+            //page: window.location.pathname,
             username: {$ne: Meteor.user().username},
             sharedState: SharedStateVals[SharedStateVals.INITIALIZED]
         });
@@ -348,5 +388,6 @@ Template['paraviewSharedSessionControls'].events({
 });
 
 Template['paraviewSharedSessionControls'].onDestroyed(function () {
+    Meteor.call('removeParaviewSessionsForUsername', Meteor.user().username);
     Meteor.clearInterval(refreshIntervalId); // not sure this is necessary
 });
