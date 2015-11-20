@@ -681,7 +681,7 @@ PV = (function () {
             return;
         }
         _session.call('viewport.camera.update', [Number(_activeViewId), opts.focalPoint, opts.viewUp, opts.camPosition]).then(function (result) {
-            //console.log('result = ' + JSON.stringify(result));
+            //console.log('updateCamera(), viewport.camera,update result = ' + JSON.stringify(result));
             render(null, null, asyncCallback);
         });
     };
@@ -872,4 +872,3 @@ PV = (function () {
         setScalarBar: setScalarBar
     };
 }());
-//# sourceMappingURL=paraview.js.map

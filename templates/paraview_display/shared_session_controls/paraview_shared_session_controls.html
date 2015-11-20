@@ -9,7 +9,7 @@
                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Share <span class="caret"></span></button>
                     <ul class="dropdown-menu">
                         {{#each otherUsers}}
-                            <li><a data-share-session-link data-username={{username}} href="#">{{username}}</a></li>
+                            <li><a data-share-session-link data-user-id={{_id}} href="#">{{username}}</a></li>
                         {{/each}}
                     </ul>
                 </div>
@@ -19,41 +19,41 @@
         {{#if isProposing}}
             <div class="well">
                 <p>Proposed sharing view with {{partnerUsername}}</p>
-                <button type="submit" data-partner-username="{{partnerUsername}}" class="btn btn-default" data-reset-sessions>Cancel</button>
+                <button type="submit" data-partner-id="{{partnerId}}" class="btn btn-default" data-reset-sessions>Cancel</button>
             </div>
         {{/if}}
 
         {{#if isJoined}}
             <div class="well">
                 <p>Joined session of {{partnerUsername}}</p>
-                <button type="submit" data-partner-username="{{partnerUsername}}" class="btn btn-default" data-reset-sessions>Cancel</button>
+                <button type="submit" data-partner-id="{{partnerId}}" class="btn btn-default" data-reset-sessions>Cancel</button>
             </div>
         {{/if}}
 
         {{#if isShared}}
             <div class="well">
                 <p>Sharing with {{partnerUsername}}</p>
-                <button type="submit" data-partner-username="{{partnerUsername}}" class="btn btn-default" data-reset-sessions>Cancel</button>
+                <button type="submit" data-partner-id="{{partnerId}}" class="btn btn-default" data-reset-sessions>Cancel</button>
             </div>
         {{/if}}
     </div>
 
-    <div id="proposed-to-modal" class="modal fade">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">Join Simulation Session</h4>
-                </div>
-                <div class="modal-body">
-                    <p>{{partnerUsername}} wants to share their simulation with you.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" data-partner-username="{{partnerUsername}}" class="btn btn-default" data-decline-proposal data-dismiss="modal">Decline</button>
-                    <button type="submit" data-partner-username="{{partnerUsername}}" class="btn btn-primary" data-accept-proposal data-dismiss="modal">Accept</button>
-                </div>
-            </div><!-- /.modal-content -->
-        </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
+    <!--<div id="proposed-to-modal" class="modal fade">-->
+        <!--<div class="modal-dialog">-->
+            <!--<div class="modal-content">-->
+                <!--<div class="modal-header">-->
+                    <!--<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>-->
+                    <!--<h4 class="modal-title">Join Simulation Session</h4>-->
+                <!--</div>-->
+                <!--<div class="modal-body">-->
+                    <!--<p>{{partnerUsername}} wants to share their simulation with you.</p>-->
+                <!--</div>-->
+                <!--<div class="modal-footer">-->
+                    <!--<button type="submit" data-partner-username="{{partnerUsername}}" class="btn btn-default" data-decline-proposal data-dismiss="modal">Decline</button>-->
+                    <!--<button type="submit" data-partner-username="{{partnerUsername}}" class="btn btn-primary" data-accept-proposal data-dismiss="modal">Accept</button>-->
+                <!--</div>-->
+            <!--</div>&lt;!&ndash; /.modal-content &ndash;&gt;-->
+        <!--</div>&lt;!&ndash; /.modal-dialog &ndash;&gt;-->
+    <!--</div>&lt;!&ndash; /.modal &ndash;&gt;-->
 
 </template>

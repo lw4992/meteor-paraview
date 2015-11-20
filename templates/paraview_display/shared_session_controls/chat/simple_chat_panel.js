@@ -26,16 +26,15 @@ var resizePanel = function resizePanel(templateInstance) {
     templateInstance.$('#simple-chat .panel-body').outerHeight(panelBodyHeight);
 };
 Template['simpleChatPanel'].onRendered(function () {
-    var _this = this;
     var messages = null;
     //this.$('#simple-chat').draggable();
-    Meteor.setTimeout(function () { return scrollMessagesDisplay(_this); }, 1000);
-    this.autorun(function () {
+    Meteor.setTimeout(() => scrollMessagesDisplay(this), 1000);
+    this.autorun(() => {
         messages = SimpleChatMessages.find({ roomId: SimpleChat.roomId });
         messages.count(); // have to actually do something with messages to trigger autorun
-        scrollMessagesDisplay(_this);
+        scrollMessagesDisplay(this);
     });
-    Meteor.setTimeout(function () { return resizePanel(_this); }, 500);
+    Meteor.setTimeout(() => resizePanel(this), 500);
 });
 Template['simpleChatPanel'].onDestroyed(function () {
 });
@@ -58,4 +57,3 @@ Template['simpleChatMessage'].helpers({
         return messageMoment.format('h:mm a');
     }
 });
-//# sourceMappingURL=simple_chat_panel.js.map

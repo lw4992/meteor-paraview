@@ -1,5 +1,5 @@
-/// <reference path='../../../.typescript/package_defs/all-definitions.d.ts' />
-/// <reference path='../../../.typescript/custom_defs/all-custom-definitions.d.ts' />
+/// <reference path='../../../../../../../meteor-client-app/app/.typescript/custom_defs/all-custom-definitions.d.ts' />
+/// <reference path='../../../../../../../meteor-client-app/app/.typescript/package_defs/all-definitions.d.ts' />
 Template['paraviewSharedConsole'].helpers({
     helperName: function () {
     }
@@ -19,4 +19,3 @@ Template['paraviewLogEntry'].helpers({
         return moment(timestamp).format('YYYY-MM-DD hh:mm:ss');
     }
 });
-//# sourceMappingURL=paraview_shared_console.js.map

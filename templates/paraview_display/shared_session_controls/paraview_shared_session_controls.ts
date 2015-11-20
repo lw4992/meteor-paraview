@@ -10,6 +10,7 @@ interface ParaviewSessionsDAO {
     session?: { _id: number };
     sharedState?: string;
     partnerUsername?: string;
+    jobId?: string;
     timestamp?: number;
 }
 declare var SimpleChat: {
@@ -64,29 +65,24 @@ var setViewportToSmallest = function setViewportToSmallest(partnerParaviewSessio
     }, 300);
 };
 
-var proposeSharedSession = function proposeSharedSession(usernameProposedTo) {
-    //console.log('SharedStateVals = ' + JSON.stringify(SharedStateVals, null, 4));
-    //console.log('PROPOSED_TO = ' + SharedStateVals[SharedStateVals.PROPOSED_TO]);
-
-    var thisUserSession = getInitializedParaviewSessionInfo();
-    thisUserSession.sharedState = SharedStateVals[SharedStateVals.PROPOSING];
-    thisUserSession.partnerUsername = usernameProposedTo;
-    Meteor.call('upsertParaviewSession', thisUserSession);
-
-    var partnerUserSession = getInitializedParaviewSessionInfo();
-    partnerUserSession.username = usernameProposedTo;
-    partnerUserSession.sharedState = SharedStateVals[SharedStateVals.PROPOSED_TO];
-    partnerUserSession.partnerUsername = Meteor.user().username;
-    Meteor.call('upsertParaviewSession', partnerUserSession);
+var proposeSharedSession = function proposeSharedSession(partnerId) {
+    UserHelper.updateSharingState({
+        userId: Meteor.user()._id,
+        sharingStatus: UserHelper.SharedState.PROPOSING,
+        partnerId: partnerId
+    });
+    UserHelper.updateSharingState({
+        userId: partnerId,
+        sharingStatus: UserHelper.SharedState.PROPOSED_TO,
+        partnerId: Meteor.user()._id
+    });
 };
 
 var startSharingSession = function startSharingSession(proposerUsername) {
-    //if (proposedSharingComputation) proposedSharingComputation.stop();
-    //if (sharingComputation) sharingComputation.stop();
-
     var thisUserSession = getInitializedParaviewSessionInfo();
     thisUserSession.sharedState = SharedStateVals[SharedStateVals.JOINED];
     thisUserSession.partnerUsername = proposerUsername;
+    thisUserSession.jobId = Session.get('currentJobId');
     Meteor.call('upsertParaviewSession', thisUserSession);
     Session.set('hasJoinedParaviewSessionOf', proposerUsername);
 
@@ -106,7 +102,6 @@ var startSharingSession = function startSharingSession(proposerUsername) {
     initializeSimpleChat();
 
     refreshIntervalId = Meteor.setInterval(function () {
-        //console.log('rendering for joiner');
         PV.render();    // PV.render() uses dimensions of #paraview-viewport by default
     }, 100);
 };
@@ -118,6 +113,18 @@ var getSessionFromSharedState = function getSessionFromSharedState(sharedState: 
         sharedState: sharedState
     }, {sort: {timestamp: 'desc'}});
     return paraviewSession;
+};
+
+var getSessionFromUserSharedState = function getSessionFromUserSharedState(username: string, sharedState: string) {
+    var paraviewSession = ParaviewSessions.findOne({
+        username: username,
+        sharedState: sharedState
+    }, {sort: {timestamp: 'desc'}});
+    return paraviewSession;
+};
+
+var userHasSharedState = function userHasSharedState(username: string, sharedState:string) {
+    return !!getSessionFromUserSharedState(username, sharedState);
 };
 
 var hasSharedState = function hasSharedState(sharedState:string) {
@@ -170,7 +177,8 @@ var listenForSharedSession = function listenForSharedSession() {
 var listenForProposedSharing = function () {
     templateInstance.autorun(function () {
         if (hasSharedState(SharedStateVals[SharedStateVals.PROPOSED_TO])) {
-            templateInstance.$('#proposed-to-modal').modal('show');
+            Session.set('isProposedToJoin', true);
+            //templateInstance.$('#proposed-to-modal').modal('show');
         }
     });
 };
@@ -187,7 +195,7 @@ var listenForInitializedSharedState = function listenForInitializedSharedState()
     });
 };
 
-var getInitializedParaviewSessionInfo = function getInitializedParaviewSessionInfo() {
+var getInitializedParaviewSessionInfo = function getInitializedParaviewSessionInfo(): ParaviewSessionsDAO {
     return {
         username: Meteor.user().username,
         page: window.location.pathname,
@@ -196,6 +204,7 @@ var getInitializedParaviewSessionInfo = function getInitializedParaviewSessionIn
         session: {_id: PV.getSessionId()},
         sharedState: SharedStateVals[SharedStateVals.INITIALIZED],
         partnerUsername: null,
+        jobId: Session.get('currentJobId'),
         timestamp: Date.now()
     };
 };
@@ -246,7 +255,7 @@ var initializeParaviewViewport = function initializeParaviewViewport() {
 
 var initializeListeners = function initializeListeners() {
     listenForInitializedSharedState();
-    listenForProposedSharing();
+    //listenForProposedSharing();
     listenForSharedSession();
 };
 
@@ -298,93 +307,83 @@ Template['paraviewSharedSessionControls'].onRendered(function () {
     });
 });
 
-var thisUserCanShare = function thisUserCanShare(paraviewSession) {
-    return isInitializing || !!paraviewSession;
+var thisUserCanShare = function thisUserCanShare() {
+    var thisUser = Meteor.user();
+    //console.log('Stringified, thisUserCanShare()' + JSON.stringify(thisUser, null, 4));
+    if (!thisUser || !thisUser['sharing'] || thisUser['sharing']['status'] !== SharedStateVals[SharedStateVals.INITIALIZED]) return false;
+    //console.log('thisUserCanShare() returning true');
+    return true;
+};
+
+var getShareableOtherUsers = function getShareableOtherUsers(): Mongo.Cursor<Meteor.User> {
+    return Meteor.users.find({
+        username: {$ne: Meteor.user().username},
+        'status.online': true,
+        'sharing.status': SharedStateVals[SharedStateVals.INITIALIZED]
+    });
 };
 
 Template['paraviewSharedSessionControls'].helpers({
-
-    //TODO: fix this so it only returns
     canShare: function () {
-        //var allParaviewSessions = ParaviewSessions.find();
-        //console.log('allParaviewSessions = ' + allParaviewSessions);
-
-        var paraviewSession = ParaviewSessions.findOne({
-            username: Meteor.user().username,
-            //page: window.location.pathname,
-            sharedState: SharedStateVals[SharedStateVals.INITIALIZED]
-        }, {sort: {timestamp: 'desc'}});
-
-        //console.log('canShare(), thisUserCanShare() = ' + thisUserCanShare(paraviewSession));
-
-        if (!thisUserCanShare(paraviewSession)) return false;
-
-        //console.log('canShare(), checking for other users, window.location.pathname = ' + window.location.pathname);
-        //console.log('Meteor.user().username = ' + Meteor.user().username);
-
-        var otherUsers = ParaviewSessions.findOne({
-            //page: window.location.pathname,
-            username: {$ne: Meteor.user().username},
-            sharedState: SharedStateVals[SharedStateVals.INITIALIZED]
-        });
-
-        //console.log('Stringified, otherUsers = ' + JSON.stringify(otherUsers, null, 4));
-        //console.log('canShare(), otherUsers = ' + !!otherUsers);
-
-        return !!otherUsers;
+        if (!thisUserCanShare()) return false;
+        return getShareableOtherUsers().count() > 0;
     },
     otherUsers: function () {
-        var otherUsers = ParaviewSessions.find({
-            //page: window.location.pathname,
-            username: {$ne: Meteor.user().username},
-            sharedState: SharedStateVals[SharedStateVals.INITIALIZED]
-        });
-        return otherUsers;
+        return getShareableOtherUsers();
     },
     isProposing: function () {
-        return hasSharedState(SharedStateVals[SharedStateVals.PROPOSING]);  // reactive function
+        return UserHelper.thisUserHasSharingState(UserHelper.SharedState.PROPOSING);
     },
     partnerUsername: function () {
-        return getPartnerUsername();
+        return UserHelper.getPartnerUsername();
+    },
+    partnerId: function () {
+        return UserHelper.getPartnerId();
     },
     isJoined: function () {
-        return hasSharedState(SharedStateVals[SharedStateVals.JOINED]);  // reactive function
+        return UserHelper.thisUserHasSharingState(UserHelper.SharedState.JOINED);
+        //return hasSharedState(SharedStateVals[SharedStateVals.JOINED]);  // reactive function
     },
     isShared: function () {
-        return hasSharedState(SharedStateVals[SharedStateVals.SHARED]);  // reactive function
+        return UserHelper.thisUserHasSharingState(UserHelper.SharedState.SHARED);
+        //return hasSharedState(SharedStateVals[SharedStateVals.SHARED]);  // reactive function
     }
 });
 
 Template['paraviewSharedSessionControls'].events({
     'click [data-share-session-link]': function (event, template) {
         event.preventDefault();
-        var username = event.target.getAttribute('data-username');
-        proposeSharedSession(username);
+        var userId = event.target.getAttribute('data-user-id');
+        proposeSharedSession(userId);
     },
-    'click [data-accept-proposal]': function (event, template) {
-        var partnerUsername = event.target.getAttribute('data-partner-username');
-        startSharingSession(partnerUsername);
-    },
-    'click [data-decline-proposal]': function (event, template) {
-        initializeParaviewSessionInfo();
-        var partnerUsername = event.target.getAttribute('data-partner-username');
-        initializeParaviewSessionInfo(partnerUsername);
-    },
+    //'click [data-accept-proposal]': function (event, template) {
+    //    var partnerUsername = event.target.getAttribute('data-partner-username');
+    //    startSharingSession(partnerUsername);
+    //},
+    //'click [data-decline-proposal]': function (event, template) {
+    //    initializeParaviewSessionInfo();
+    //    var partnerUsername = event.target.getAttribute('data-partner-username');
+    //    initializeParaviewSessionInfo(partnerUsername);
+    //},
     'click [data-reset-sessions]': function (event, template) {
-        initializeParaviewSessionInfo();
-        var partnerUsername = event.target.getAttribute('data-partner-username');
-        initializeParaviewSessionInfo(partnerUsername);
+        event.preventDefault();
+        //initializeParaviewSessionInfo();
+        //var partnerUsername = event.target.getAttribute('data-partner-username');
+        //initializeParaviewSessionInfo(partnerUsername);
+        var partnerId = event.target.getAttribute('data-partner-id');
+        UserHelper.initializeSharingState(Meteor.user()._id);
+        UserHelper.initializeSharingState(partnerId);
     },
 
-    //TODO:  checkl this
+    //TODO:  check this
     // this event listener can be removed once each session is on a separate paraview server
-    'mousedown #viewport-graphics': function () {
-        var paraviewSettings = ParaviewSessions.findOne({page: window.location.pathname}, {sort: {timestamp: -1}});
-        if (paraviewSettings && paraviewSettings.username !== Meteor.user().username) {  // Some other user last touched this page
-            initializeParaviewViewport();
-            initializeParaviewSessionInfo(); //TODO: probably want to save specific parts, not initialize
-        }
-    }
+    //'mousedown #viewport-graphics': function () {
+    //    var paraviewSettings = ParaviewSessions.findOne({page: window.location.pathname}, {sort: {timestamp: -1}});
+    //    if (paraviewSettings && paraviewSettings.username !== Meteor.user().username) {  // Some other user last touched this page
+    //        initializeParaviewViewport();
+    //        initializeParaviewSessionInfo(); //TODO: probably want to save specific parts, not initialize
+    //    }
+    //}
 });
 
 Template['paraviewSharedSessionControls'].onDestroyed(function () {

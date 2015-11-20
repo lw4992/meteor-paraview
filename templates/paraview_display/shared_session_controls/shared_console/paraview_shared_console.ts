@@ -1,5 +1,5 @@
-/// <reference path='../../../.typescript/package_defs/all-definitions.d.ts' />
-/// <reference path='../../../.typescript/custom_defs/all-custom-definitions.d.ts' />
+/// <reference path='../../../../../../../meteor-client-app/app/.typescript/custom_defs/all-custom-definitions.d.ts' />
+/// <reference path='../../../../../../../meteor-client-app/app/.typescript/package_defs/all-definitions.d.ts' />
 
 Template['paraviewSharedConsole'].helpers({
     helperName: function () {
