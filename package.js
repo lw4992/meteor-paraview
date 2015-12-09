@@ -1,6 +1,6 @@
 Package.describe({
     name: 'fullflavedave:paraview',
-    version: '0.1.10',
+    version: '0.1.11',
     summary: 'A user-friendly wrapper for the ParaViewWeb JavaScript API',
     git: 'https://github.com/fullflavedave/meteor-paraview.git',
     documentation: 'README.md'
@@ -32,7 +32,7 @@ Package.onUse(function (api) {
 
     api.export(['vtkWeb'], 'client');
     api.export(['PV'], 'client');
-    api.export('ParaviewSessions', ['client', 'server']);
+    api.export('PVUserCameraSettings', ['client', 'server']);
 
     api.export('SimpleChat', 'client');
     api.export('SimpleChatMessages', ['client', 'server']);
@@ -75,10 +75,10 @@ Package.onUse(function (api) {
     api.use('mizzao:jquery-ui@1.11.4', 'client');
 
     api.addFiles([
-        'templates/paraview_display/shared_session_controls/chat/simple_chat_panel.html',
-        'templates/paraview_display/shared_session_controls/chat/simple_chat_panel.js',
-        'templates/paraview_display/shared_session_controls/chat/simple_chat_panel.css',
-        'templates/paraview_display/shared_session_controls/chat/simple_chat.js'
+        'templates/paraview_display/shared_session_controls/simple_chat/simple_chat_panel.html',
+        'templates/paraview_display/shared_session_controls/simple_chat/simple_chat_panel.js',
+        'templates/paraview_display/shared_session_controls/simple_chat/simple_chat_panel.css',
+        'templates/paraview_display/shared_session_controls/simple_chat/simple_chat.js'
     ], 'client');
 
 });

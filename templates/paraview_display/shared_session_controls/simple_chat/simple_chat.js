@@ -25,3 +25,12 @@ SimpleChat.removeAllMessages = function removeAllMessages(roomId) {
     roomId = roomId || this.roomId;
     Meteor.call('removeAllMessages', roomId);
 };
+
+SimpleChat.resizeToContainer = function resizeToContainer() {
+    var panelTotalHeight = $('#simple-chat').height();
+    var panelHeadingHeight = $('#simple-chat .panel-heading').outerHeight();
+    var panelFooterHeight = $('#simple-chat .panel-footer').outerHeight();
+    var panelBodyHeight = panelTotalHeight - panelHeadingHeight - panelFooterHeight;
+    $('#simple-chat .panel-body').outerHeight(panelBodyHeight);
+    Meteor.setTimeout(() => $('#simple-chat .panel-body').outerHeight(panelBodyHeight), 500);
+};

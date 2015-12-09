@@ -674,8 +674,8 @@ PV = (function () {
      * @param {Object} opts
      * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
      */
-    var updateCamera = function (opts, asyncCallback) {
-        //console.log('updateCamera, opts = ' + JSON.stringify([Number(PVW._activeViewId), opts.focalPoint, opts.viewUp, opts.camPosition]));
+    var updateCamera = function updateCamnera(opts, asyncCallback) {
+        //console.log('updateCamera, opts = ' + JSON.stringify(opts, null, 4));
         if (!_session) {
             asyncCallback && asyncCallback(null, { success: true });
             return;
@@ -683,6 +683,18 @@ PV = (function () {
         _session.call('viewport.camera.update', [Number(_activeViewId), opts.focalPoint, opts.viewUp, opts.camPosition]).then(function (result) {
             //console.log('updateCamera(), viewport.camera,update result = ' + JSON.stringify(result));
             render(null, null, asyncCallback);
+        });
+    };
+    var getCamera = function getCamera(asyncCallback) {
+        var transformedResult = null;
+        _session.call('viewport.camera.get', [_activeViewId]).then(function (result) {
+            //console.log('Stringified, getCamera() result = ' + JSON.stringify(result, null, 4));
+            transformedResult = {
+                focalPoint: result.focal,
+                viewUp: result.up,
+                camPosition: result.position
+            };
+            asyncCallback && asyncCallback(null, transformedResult);
         });
     };
     /**
@@ -858,6 +870,7 @@ PV = (function () {
         playRepeat: playRepeat,
         rescale: rescale,
         updateCamera: updateCamera,
+        getCamera: getCamera,
         updateOrientationAxesVisibility: updateOrientationAxesVisibility,
         updateCenterAxesVisibility: updateCenterAxesVisibility,
         getElementFromServer: getElementFromServer,
@@ -872,3 +885,4 @@ PV = (function () {
         setScalarBar: setScalarBar
     };
 }());
+//# sourceMappingURL=paraview.js.map

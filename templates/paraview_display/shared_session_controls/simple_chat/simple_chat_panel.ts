@@ -1,6 +1,24 @@
 /// <reference path='../../../../../../../meteor-client-app/app/.typescript/custom_defs/all-custom-definitions.d.ts' />
 /// <reference path='../../../../../../../meteor-client-app/app/.typescript/package_defs/all-definitions.d.ts' />
 
+var waitForEquals = function waitForEquals(currentValFunc: Function, desiredValue: any, callback: Function, timeoutInMillis = 10000) {
+    var checkInterval = 100;
+    var startTime = Date.now();
+    var intervalId = Meteor.setInterval(function () {
+        if (currentValFunc() === desiredValue) {
+            Meteor.clearInterval(intervalId);
+            callback();
+        } else if (Date.now() > startTime + timeoutInMillis) {
+            Meteor.clearInterval(intervalId);
+            callback(new Meteor.Error('timeout', 'DAUtil.waitForEquals:  Function timed out waiting for function to return desired value'));
+        }
+    }, checkInterval);
+};
+
+var waitForHTMLElement = function waitForHTMLElement(selector: string, callback: Function, timeoutInMillis = 10000) {
+    waitForEquals(() => !!$(selector), true, callback, timeoutInMillis);
+};
+
 Template['simpleChatPanel'].helpers({
     simpleChatMessages: function () {
         var messages = SimpleChatMessages.find({ roomId: SimpleChat.roomId });
@@ -18,22 +36,8 @@ Template['simpleChatPanel'].onCreated(function () {
     Meteor.subscribe('simpleChatMessages');
 });
 
-var resizePanel = function resizePanel(templateInstance) {
-    var panelTotalHeight = templateInstance.$('#simple-chat').height();
-    var panelHeadingHeight = templateInstance.$('#simple-chat .panel-heading').outerHeight();
-    var panelFooterHeight = templateInstance.$('#simple-chat .panel-footer').outerHeight();
-
-    var panelBodyHeight = panelTotalHeight - panelHeadingHeight - panelFooterHeight;
-    console.log('panelTotalHeight = ' + panelTotalHeight);
-    console.log('panelHeadingHeight = ' + panelHeadingHeight);
-    console.log('panelFoooterHeight = ' + panelFooterHeight);
-    console.log('setting panelBodyHeight = ' + panelBodyHeight);
-    templateInstance.$('#simple-chat .panel-body').outerHeight(panelBodyHeight);
-};
-
 Template['simpleChatPanel'].onRendered(function () {
     var messages = null;
-    //this.$('#simple-chat').draggable();
     Meteor.setTimeout(() => scrollMessagesDisplay(this), 1000);
     this.autorun(() => {
         messages = SimpleChatMessages.find({ roomId: SimpleChat.roomId });
@@ -41,18 +45,13 @@ Template['simpleChatPanel'].onRendered(function () {
         scrollMessagesDisplay(this);
     });
 
-    Meteor.setTimeout(() => resizePanel(this), 500);
-});
-
-Template['simpleChatPanel'].onDestroyed(function () {
-
+    waitForHTMLElement('#simple-chat .panel-heading', SimpleChat.resizeToContainer);
 });
 
 Template['simpleChatPanel'].events({
     'submit #simple-chat-form': function (event:Meteor.Event, templateInstance:Blaze.TemplateInstance) {
         event.preventDefault();
         var messageText = templateInstance.$('#simple-chat-text-box').val();
-        console.log('submitting simple-chat-form, messageText = ' + messageText);
         if (messageText) SimpleChat.send(messageText);
         templateInstance.$('#simple-chat-text-box').val('');
     }
