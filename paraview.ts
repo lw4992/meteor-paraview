@@ -984,7 +984,7 @@ PV = (function () {
         executeTasks: executeTasks,
         getSessionId: getSessionId,
         setSessionId: setSessionId,
-        rebindViewport: rebindViewport,
+        //rebindViewport: rebindViewport,
         setScalarBar: setScalarBar
     }
 }());

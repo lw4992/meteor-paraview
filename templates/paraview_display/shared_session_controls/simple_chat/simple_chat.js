@@ -4,7 +4,8 @@ SimpleChat = {
     maxMessagesDisplayed: 100
 };
 
-SimpleChat.configure = function configure(options = {roomId: 'defaultRoomId', userId: Meteor.user(), maxMessagesDisplayed: 100}) {
+SimpleChat.configure = function configure(options = {roomId: 'defaultRoomId', userId: Meteor.user() && Meteor.user()._id, maxMessagesDisplayed: 100}) {
+    //lodash.assign(this, options);
     this.roomId = options.roomId;
     this.userId = options.userId;
     this.maxMessagesDisplayed = options.maxMessagesDisplayed;
