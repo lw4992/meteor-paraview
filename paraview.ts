@@ -174,7 +174,7 @@ PV = (function () {
 
         vtkWeb.smartConnect(config, start, function (code, reason) {
             //$(".loading").hide();
-            console.log('smartConnect() error, reason: ' + reason);
+            console.log('Connection was closed -- cleaning up. Code: ' + code + ', reason: ' + reason);
             _session = null;
             Session.set('pvwInitialized', false);
             removeAllElements(function (error, result) {
