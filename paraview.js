@@ -885,3 +885,4 @@ PV = (function () {
         setScalarBar: setScalarBar
     };
 }());
+//# sourceMappingURL=paraview.js.map
