@@ -101,19 +101,20 @@ var isSliderElementDisplayed = function isSliderElementDisplayed() {
     return $('.slider');
 };
 Template['paraviewControlPanel'].onRendered(function () {
+    var _this = this;
     var elements = null, opacity = null, $slider = null, $sliderValueDisplay = null, intervalId = null;
-    this.autorun(() => {
+    this.autorun(function () {
         elements = PV.elements.get(); // reactive, triggers Tracker.autorun
-        intervalId = Meteor.setInterval(() => {
+        intervalId = Meteor.setInterval(function () {
             if (isSliderElementDisplayed()) {
                 Meteor.clearInterval(intervalId);
             }
             else {
                 return;
             }
-            elements.forEach((proxy) => {
-                $slider = this.find('#slider-' + proxy.rep);
-                $sliderValueDisplay = this.find('#slider-value-' + proxy.rep);
+            elements.forEach(function (proxy) {
+                $slider = _this.find('#slider-' + proxy.rep);
+                $sliderValueDisplay = _this.find('#slider-value-' + proxy.rep);
                 opacity = PV.elementOpacities[proxy.rep];
                 if (!isTemplateDomReady($slider, opacity, proxy.rep))
                     return;
@@ -127,3 +128,4 @@ Template['paraviewControlPanel'].onRendered(function () {
         }, 100);
     });
 });
+//# sourceMappingURL=paraview_control_panel.js.map

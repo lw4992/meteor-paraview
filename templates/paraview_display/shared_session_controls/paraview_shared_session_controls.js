@@ -127,3 +127,4 @@ Template['paraviewSharedSessionControls'].events({
 Template['paraviewSharedSessionControls'].onDestroyed(function () {
     Meteor.clearInterval(refreshIntervalId); // not sure this is necessary
 });
+//# sourceMappingURL=paraview_shared_session_controls.js.map

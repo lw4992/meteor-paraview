@@ -39,3 +39,4 @@ Template['paraviewScalarbar']['helpers']({
         return gradientValueText;
     }
 });
+//# sourceMappingURL=paraview_scalarbar.js.map

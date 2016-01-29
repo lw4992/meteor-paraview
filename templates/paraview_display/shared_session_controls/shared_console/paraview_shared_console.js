@@ -19,3 +19,4 @@ Template['paraviewLogEntry'].helpers({
         return moment(timestamp).format('YYYY-MM-DD hh:mm:ss');
     }
 });
+//# sourceMappingURL=paraview_shared_console.js.map
