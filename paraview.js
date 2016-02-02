@@ -17,7 +17,7 @@ PV = (function () {
         id: 0,
         value: [0.9765, 0.9765, 0.9765],
         name: "Background"
-    };
+    }, _renderer = new ReactiveVar('image'); // 'vgl', 'image' or 'webgl' (which seems deprecated)
     //setScalarBar = function (opts, asyncCallback?:iPVCallback) {
     //    //    console.log('** Starting setScalarBarSyncable, visibilityMap = ' + JSON.stringify(options.visibilityMap));
     //    PV._session.call('pv.color.manager.scalarbar.visibility.set', [options.visibilityMap]).then(function (result) {
@@ -148,6 +148,15 @@ PV = (function () {
             });
         });
     };
+    // Reactive since renderer is a ReactiveVar
+    var getRenderer = function getRenderer() {
+        console.log('_renderer.get() = ', _renderer.get());
+        return _renderer.get();
+    };
+    var setRenderer = function setRenderer(renderer) {
+        _renderer.set(renderer);
+        _viewport.setActiveRenderer(renderer);
+    };
     var _bindViewport = function _bindViewport(newSession) {
         //console.log('** Starting PV._bindViewport(), _viewportCssId = ' + _viewportCssId);
         console.log('PV._bindViewport(), _session._id = ' + _session._id);
@@ -155,7 +164,7 @@ PV = (function () {
             session: newSession || _session,
             view: -1,
             enableInteractions: true,
-            renderer: 'image' //image, vgl, or webgl
+            renderer: _renderer.get() // function-scoped var, can be 'vgl', 'image' or 'webgl'Â
         };
         var newViewport = vtkWeb.createViewport(viewportOptions);
         newViewport.bind(_viewportCssId);
@@ -686,6 +695,7 @@ PV = (function () {
         });
     };
     var getCamera = function getCamera(asyncCallback) {
+        //console.log('about to call getCamera()');
         var transformedResult = null;
         _session.call('viewport.camera.get', [_activeViewId]).then(function (result) {
             //console.log('Stringified, getCamera() result = ' + JSON.stringify(result, null, 4));
@@ -882,7 +892,9 @@ PV = (function () {
         getSessionId: getSessionId,
         setSessionId: setSessionId,
         //rebindViewport: rebindViewport,
-        setScalarBar: setScalarBar
+        setScalarBar: setScalarBar,
+        getRenderer: getRenderer,
+        setRenderer: setRenderer
     };
 }());
 //# sourceMappingURL=paraview.js.map

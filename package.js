@@ -1,6 +1,6 @@
 Package.describe({
     name: 'fullflavedave:paraview',
-    version: '0.1.16',
+    version: '0.1.17',
     summary: 'A user-friendly wrapper for the ParaViewWeb JavaScript API',
     git: 'https://github.com/fullflavedave/meteor-paraview.git',
     documentation: 'README.md'
@@ -61,7 +61,9 @@ Package.onUse(function (api) {
         'templates/paraview_display/loading/paraview_loading.html',
         'templates/paraview_display/loading/paraview_loading.css',
         'templates/paraview_display/shared_session_controls/paraview_shared_session_controls.html',
-        'templates/paraview_display/shared_session_controls/paraview_shared_session_controls.js'
+        'templates/paraview_display/shared_session_controls/paraview_shared_session_controls.js',
+        'templates/paraview_display/renderer_controls/paraview_renderer_controls.html',
+        'templates/paraview_display/renderer_controls/paraview_renderer_controls.js'
     ], 'client');
 
     // For shared console

@@ -4,7 +4,10 @@
             <!--{{> paraviewMovieProgress}}-->
             <div id="paraview-viewport" class="paraview-viewport"></div>
         </div>
-        {{> paraviewSharedSessionControls}}
+        <div id="paraview-secondary-control-bar">
+            {{> paraviewSharedSessionControls}}
+            {{> paraviewRendererControls}}
+        </div>
         {{> paraviewControlPanel}}
         {{> paraviewScalarbar}}
     </div>

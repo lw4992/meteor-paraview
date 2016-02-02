@@ -1,0 +1,14 @@
+<template name="paraviewRendererControls">
+    <div id="paraview-renderer-controls">
+        <div class="btn-group" role="group" aria-label="...">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Renderer <span class="caret"></span></button>
+                <ul class="dropdown-menu dropdown-menu-right">
+                    {{#each renderers}}
+                        <li class="{{isActive id currentRendererId}}"><a data-renderer-id={{id}} data-renderer-option href="#">{{displayName}}</a></li>
+                    {{/each}}
+                </ul>
+            </div>
+        </div>
+    </div>
+</template>

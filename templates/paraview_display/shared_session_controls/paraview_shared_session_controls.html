@@ -6,8 +6,8 @@
         {{#if canShare}}
             <div class="btn-group" role="group" aria-label="...">
                 <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Share <span class="caret"></span></button>
-                    <ul class="dropdown-menu">
+                    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Share <span class="caret"></span></button>
+                    <ul class="dropdown-menu dropdown-menu-right">
                         {{#each otherUsers}}
                             <li><a data-share-session-link data-user-id={{_id}} href="#">{{username}}</a></li>
                         {{/each}}
