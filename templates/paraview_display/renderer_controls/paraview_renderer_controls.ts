@@ -30,9 +30,7 @@ Template['paraviewRendererControls'].onDestroyed(function () {
 Template['paraviewRendererControls'].events({
     'click [data-renderer-option]'(event:Meteor.Event, templateInstance: Blaze.Template) {
         event.preventDefault();
-        console.log('It was clicked!');
         var rendererId = event.target.getAttribute('data-renderer-id');
-        console.log('rendererId = ', rendererId);
         PV.setRenderer(rendererId);
     }
 });

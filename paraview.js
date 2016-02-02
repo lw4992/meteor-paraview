@@ -150,7 +150,7 @@ PV = (function () {
     };
     // Reactive since renderer is a ReactiveVar
     var getRenderer = function getRenderer() {
-        console.log('_renderer.get() = ', _renderer.get());
+        //console.log('_renderer.get() = ', _renderer.get());
         return _renderer.get();
     };
     var setRenderer = function setRenderer(renderer) {

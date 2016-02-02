@@ -102,6 +102,20 @@
     left: 15px;
     z-index: 10;
 }
+
+#paraview-control-panel .dropdown-menu {
+    padding: 15px;
+}
+
+#paraview-control-panel .well {
+    margin-top: 15px;
+    margin-bottom: 0px;
+}
+
+#paraview-control-panel .first.well {
+    margin-top: 0px;
+}
+
 .pv-expander-collapser {
     display: inline-block;
     width: 10px;
@@ -117,4 +131,32 @@
 }
 .no-border-margin-padding .panel .panel-body .last-well {
     margin-bottom: 0;
+}
+
+.panel.collapsible .panel-heading.top-level {
+    height: 29px;
+    padding: 5px 10px 5px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 3px;
+    color: #666666;
+    background-color: #ffffff;
+    border-color: #eeeeee;
+    margin-bottom: 0;
+    font-weight: normal;
+    vertical-align: middle;
+    touch-action: manipulation;
+    cursor: pointer;
+    background-image: none;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.panel.collapsible .panel-heading.top-level:hover {
+    background-color: #f0f0f0;
+}
+
+.panel.collapsible .panel-heading.top-level.expanded {
+    border-bottom: 1px solid #eeeeee;
+    background-color: #d4d4d4;
 }

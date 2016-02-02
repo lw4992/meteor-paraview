@@ -80,3 +80,7 @@
     height: 300px;
     overflow-y: auto;
 }
+
+.btn-group .dropdown-menu.wide {
+    width: 400px;
+}

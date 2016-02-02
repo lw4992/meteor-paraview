@@ -1,5 +1,5 @@
-/// <reference path='../../../../../meteor-client-app/app/.typescript/package_defs/all-definitions.d.ts' />
-/// <reference path='../../../../../meteor-client-app/app/.typescript/custom_defs/all-custom-definitions.d.ts' />
+/// <reference path='../../../../../../meteor-client-app/app/.typescript/package_defs/all-definitions.d.ts' />
+/// <reference path='../../../../../../meteor-client-app/app/.typescript/custom_defs/all-custom-definitions.d.ts' />
 // [
 //   { parent: {proxy}
 //     children: [proxy, proxy, proxy]
@@ -49,13 +49,31 @@ Template['paraviewControlPanel'].events({
         else
             PV.updateElementVisibility(proxyRepId, false);
     },
+    'click .panel-heading.collapsed': function (event, template) {
+        event.preventDefault();
+        var $target = $(event.target);
+        var groupId = $target.closest('div').data('target');
+        $(groupId).show(500);
+        var $heading = $target.closest('.panel-heading');
+        $heading.hide();
+        $heading.siblings().show();
+    },
+    'click .panel-heading.expanded': function (event, template) {
+        event.preventDefault();
+        var $target = $(event.target);
+        var groupId = $target.closest('div').data('target');
+        $(groupId).slideToggle(500);
+        $target.closest('.panel-heading').hide();
+        $target.closest('.panel-heading').siblings().show();
+    },
     'click .pv-expander-collapser': function (event, template) {
         event.preventDefault();
         var $target = $(event.target);
         var groupId = $target.closest('a').attr('href');
+        console.log('groupId = ', groupId);
         $(groupId).slideToggle(500);
-        $target.closest('a').toggle();
-        $target.closest('a').siblings().toggle();
+        $target.closest('.panel-heading').toggle();
+        $target.closest('.panel-heading').siblings().toggle();
     },
     'click .slider': function (event, template) {
         var repId = event.target.closest('.slider').getAttribute('data-rep-id');
