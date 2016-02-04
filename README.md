@@ -338,3 +338,74 @@ It hasn't yet been created in a way that is easy to customize the style.
 
 ## Contributions
 Contributions are welcome!   Please fork the code and submit a pull request.
+
+
+### Updating package to the latest ParaViewWeb code
+
+- Install latest version of ParaView
+- Copy client files to ParaView meteor package
+    - `cp /Applications/paraview.app/Contents/www/lib/core/vtkweb-all.js ~/dev/meteor/packages/meteor-paraview/lib/paraview_web`
+    - `cp /Applications/paraview.app/Contents/www/ext/core/autobahn.min.js ~/dev/meteor/packages/meteor-paraview/lib/paraview_web`
+    - `cp /Applications/paraview.app/Contents/www/ext/core/hammer.min.js ~/dev/meteor/packages/meteor-paraview/lib/paraview_web`
+    - `cp /Applications/paraview.app/Contents/www/ext/core/jquery.hammer.min.js ~/dev/meteor/packages/meteor-paraview/lib/paraview_web`
+    - `cp /Applications/paraview.app/Contents/www/ext/core/gl-matrix-min.js ~/dev/meteor/packages/meteor-paraview/lib/paraview_web`
+    - ?? `cp /Applications/paraview.app/Contents/www/ext/core/vgl.min.js ~/dev/meteor/packages/meteor-paraview/lib/paraview_web` ?? 
+- modify /client/lib/paraview/lib/vgl.min.js
+    - Change `var vgl =` to just `vgl =` (remove "var" to make vgl a global var for Meteor)
+- Modify /client/lib/paraview/lib/vtkweb-all.js:
+    - Change connection properties to be dynamic
+
+            module.properties = {
+                'sessionManagerURL': PV.getServerSessionManagerUrl(),
+                'sessionURL': PV.getServerSessionUrl()        
+                //'sessionManagerURL': Meteor.settings['public']['paraview']['sessionManagerUrl'],
+                //'sessionURL': Meteor.settings['public']['paraview']['sessionUrl']        
+                //'sessionManagerURL': location.protocol + "//" + location.hostname + ":" + location.port + "/paraview/",
+                //'sessionURL': (isSecured() ? "wss" : "ws") + "://" + location.hostname + ":" + location.port + "/ws"
+            };
+
+    - In autoConnect():
+
+                // No launcher found or error
+                try {
+                  var launcherResponse = JSON.parse(msg.responseText);
+                  close("launcher error", launcherResponse);
+                } catch (err) {
+                    console.log("Try to connect using the direct WS url: " + PV.getServerSessionUrl());
+                    vtkWeb.connect({ sessionURL: PV.getServerSessionUrl() }, ready, close);
+                  //console.log("No launcher found.  Attempting to connect using the direct WS url.");
+                  //connection.sessionURL = vtkWeb.properties.sessionURL;
+                  //vtkWeb.connect(connection, ready, close);
+                }
+
+    - add line at end of file to make vtkWeb globally accessible:
+
+                vtkWeb = window.vtkWeb;
+
+    - add debug line in function connect():
+    
+            connectionInfo.connection.onclose = function () {
+                console.log('Something closed the connection!');
+                delete connections[connectionInfo.sessionURL];
+                if (onClose) {
+                    onClose(arguments[0], arguments[1].reason);
+                }
+                return false;
+            }   
+            
+            
+- Verify that getCamera() code is correct in `/Applications/paraview.app/Contents/Python/paraview/web/protocols.py`
+    - verify this code exists after “viewport.camera.update” code:
+
+            # RpcName: getCamera => viewport.camera.get
+            @exportRpc("viewport.camera.get")
+            def getCamera(self, view_id):
+                view = self.getView(view_id)
+                return {
+                    'focal': list(view.CameraFocalPoint),
+                    'up': list(view.CameraViewUp),
+                    'position': list(view.CameraPosition)       ​
+                }
+                
+- Optional: Create debug lines in new /Applications/paraview.app/Contents/www/apps/Visualizer/main.js to understand what is going on
+             

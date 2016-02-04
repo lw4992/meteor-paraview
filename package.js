@@ -1,6 +1,6 @@
 Package.describe({
     name: 'fullflavedave:paraview',
-    version: '0.1.18',
+    version: '0.2.0',
     summary: 'A wrapper package for the ParaViewWeb JavaScript API',
     git: 'https://github.com/fullflavedave/meteor-paraview.git',
     documentation: 'README.md'
@@ -27,9 +27,11 @@ Package.onUse(function (api) {
         'lib/paraview_web/hammer.min.js',
         'lib/paraview_web/jquery.hammer.min.js',
         'lib/paraview_web/autobahn.min.js',
+        'lib/paraview_web/vgl.min.js',
         'lib/paraview_web/vtkweb-all.js'
     ], 'client');
 
+    api.export(['vgl'], 'client');
     api.export(['vtkWeb'], 'client');
     api.export(['PV'], 'client');
     api.export('PVUserCameraSettings', ['client', 'server']);
