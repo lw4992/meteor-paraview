@@ -1,6 +1,6 @@
 Package.describe({
     name: 'fullflavedave:paraview',
-    version: '0.2.0',
+    version: '0.2.1',
     summary: 'A wrapper package for the ParaViewWeb JavaScript API',
     git: 'https://github.com/fullflavedave/meteor-paraview.git',
     documentation: 'README.md'
