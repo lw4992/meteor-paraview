@@ -17,43 +17,46 @@
         {{/if}}
 
         {{#if isProposing}}
-            <div class="well">
-                <p>Proposed sharing view with {{partnerUsername}}</p>
-                <button type="submit" data-partner-id="{{partnerId}}" class="btn btn-default" data-reset-sessions>Cancel</button>
+            <div class="btn-group" role="group" aria-label="...">
+                <div class="btn-group open" role="group">
+                    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Share <span class="caret"></span></button>
+                    <div class="dropdown-menu dropdown-menu-right panel panel-default">
+                        <div class="panel-body pull-center">
+                            <p>Proposed sharing view with {{partnerUsername}}</p>
+                            <button type="submit" data-partner-id="{{partnerId}}" class="btn btn-default" data-reset-sessions>Cancel</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         {{/if}}
 
         {{#if isJoined}}
-            <div class="well">
-                <p>Joined session of {{partnerUsername}}</p>
-                <button type="submit" data-partner-id="{{partnerId}}" class="btn btn-default" data-reset-sessions>Cancel</button>
+            <div class="btn-group" role="group" aria-label="...">
+                <div class="btn-group open" role="group">
+                    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Share <span class="caret"></span></button>
+                    <div class="dropdown-menu dropdown-menu-right panel panel-default">
+                        <div class="panel-body pull-center">
+                            <p>Joined session of {{partnerUsername}}</p>
+                            <button type="submit" data-partner-id="{{partnerId}}" class="btn btn-default" data-reset-sessions>Cancel</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         {{/if}}
 
         {{#if isShared}}
-            <div class="well">
-                <p>Sharing with {{partnerUsername}}</p>
-                <button type="submit" data-partner-id="{{partnerId}}" class="btn btn-default" data-reset-sessions>Cancel</button>
+            <div class="btn-group" role="group" aria-label="...">
+                <div class="btn-group open" role="group">
+                    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Share <span class="caret"></span></button>
+                    <div class="dropdown-menu dropdown-menu-right panel panel-default">
+                        <div class="panel-body pull-center">
+                            <p>Sharing with {{partnerUsername}}</p>
+                            <button type="submit" data-partner-id="{{partnerId}}" class="btn btn-default" data-reset-sessions>Cancel</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         {{/if}}
     </div>
-
-    <!--<div id="proposed-to-modal" class="modal fade">-->
-        <!--<div class="modal-dialog">-->
-            <!--<div class="modal-content">-->
-                <!--<div class="modal-header">-->
-                    <!--<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>-->
-                    <!--<h4 class="modal-title">Join Simulation Session</h4>-->
-                <!--</div>-->
-                <!--<div class="modal-body">-->
-                    <!--<p>{{partnerUsername}} wants to share their simulation with you.</p>-->
-                <!--</div>-->
-                <!--<div class="modal-footer">-->
-                    <!--<button type="submit" data-partner-username="{{partnerUsername}}" class="btn btn-default" data-decline-proposal data-dismiss="modal">Decline</button>-->
-                    <!--<button type="submit" data-partner-username="{{partnerUsername}}" class="btn btn-primary" data-accept-proposal data-dismiss="modal">Accept</button>-->
-                <!--</div>-->
-            <!--</div>&lt;!&ndash; /.modal-content &ndash;&gt;-->
-        <!--</div>&lt;!&ndash; /.modal-dialog &ndash;&gt;-->
-    <!--</div>&lt;!&ndash; /.modal &ndash;&gt;-->
 
 </template>
