@@ -1,12 +1,8 @@
 <template name="paraviewControlPanel">
     <div id="paraview-control-panel">
         <div class="panel panel-default collapsible">
-            <div data-target="#vis-controls" class="panel-heading collapsed top-level">CONTROLS<b class="caret"></b></div>
-            <div data-target="#vis-controls" class="panel-heading expanded top-level" hidden>CONTROLS<b class="caret"></b></div>
-            <!--<div class="panel-heading">-->
-                <!--<a href="#vis-controls" class="pv-expander-collapser" style="display: none">CONTROLS <b class="caret"></b></a>-->
-                <!--<a href="#vis-controls" class="pv-expander-collapser">CONTROLS <b class="caret"></b></a>-->
-            <!--</div>-->
+            <div data-target="#vis-controls" class="panel-heading collapsed top-level">VISIBILITY<b class="caret"></b></div>
+            <div data-target="#vis-controls" class="panel-heading expanded top-level" hidden>VISIBILITY<b class="caret"></b></div>
             <div id="vis-controls" class="panel-body" hidden>
 
                 <section class="first well">
@@ -59,7 +55,7 @@
                                                         </label>
                                                     </div>
                                                     <div class="slider-group" data-rep-id="{{rep}}">
-                                                        Opacity: <span id="slider-value-{{rep}}"></span>
+                                                        Opacity: <span id="slider-value-{{rep}}" data-slider-value>22</span>
 
                                                         <div class="slider-slider">
                                                             <div id="slider-{{rep}}" data-slider data-rep-id="{{rep}}" class="slider">

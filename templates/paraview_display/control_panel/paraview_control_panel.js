@@ -1,5 +1,6 @@
 /// <reference path='../../../../../../meteor-client-app/app/.typescript/package_defs/all-definitions.d.ts' />
 /// <reference path='../../../../../../meteor-client-app/app/.typescript/custom_defs/all-custom-definitions.d.ts' />
+// addedProxies will have this structure
 // [
 //   { parent: {proxy}
 //     children: [proxy, proxy, proxy]
@@ -105,37 +106,24 @@ var createSlider = function createSlider($slider, opacity) {
 var isSliderCreated = function isSliderCreated(slider) {
     return slider.className.indexOf('noUi-target') > -1;
 };
-var isTemplateDomReady = function isTemplateDomReady($slider, opacity, repId) {
-    if (addedProxies.indexOf(repId) > -1)
-        return false;
-    if (!$slider.getAttribute('data-rep-id'))
-        return false;
-    if (!opacity)
-        return false;
-    return true;
-};
-// Not sure why doesn't work with Template().instance.find() instead of JQuery select
-var isSliderElementDisplayed = function isSliderElementDisplayed() {
-    return $('.slider');
+var sliderHasBeenAdded = function isTemplateDomReady(repId) {
+    return addedProxies.indexOf(repId) > -1;
 };
 Template['paraviewControlPanel'].onRendered(function () {
     var _this = this;
     var elements = null, opacity = null, $slider = null, $sliderValueDisplay = null, intervalId = null;
     this.autorun(function () {
         elements = PV.elements.get(); // reactive, triggers Tracker.autorun
-        intervalId = Meteor.setInterval(function () {
-            if (isSliderElementDisplayed()) {
-                Meteor.clearInterval(intervalId);
-            }
-            else {
-                return;
-            }
+        if (!elements)
+            return; // guard
+        loda.waitForHTMLElement('.slider', function () {
             elements.forEach(function (proxy) {
                 $slider = _this.find('#slider-' + proxy.rep);
                 $sliderValueDisplay = _this.find('#slider-value-' + proxy.rep);
-                opacity = PV.elementOpacities[proxy.rep];
-                if (!isTemplateDomReady($slider, opacity, proxy.rep))
+                opacity = PV.elementOpacities[proxy.rep] || 1; // won't find the element if it was never altered from default of 1, TODO: not the best strategy
+                if (sliderHasBeenAdded(proxy.rep))
                     return;
+                //waitForEquals(() => !$slider || !$slider.getAttribute('data-rep-id'), () => {});  // not necessary?
                 if (!isSliderCreated($slider)) {
                     createSlider($slider, opacity);
                     addedProxies.push(proxy.rep);
@@ -143,7 +131,7 @@ Template['paraviewControlPanel'].onRendered(function () {
                 setPageOpacityDisplays($slider, $sliderValueDisplay, opacity);
                 createSliderUpdateEventHandler($slider, $sliderValueDisplay);
             });
-        }, 100);
+        });
     });
 });
 //# sourceMappingURL=paraview_control_panel.js.map
