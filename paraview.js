@@ -9,7 +9,7 @@ PV = (function () {
      */
     // These vars are not really public, but they are made public in the return
     // Same naming convention used for functions, even though all are really private within the closure
-    var elements = new ReactiveVar([]), elementOpacities = {}, serverSessionManagerUrl = 'http://localhost:9000/paraview', serverSessionUrl = '', scalarBar = new ReactiveVar({
+    var elements = new ReactiveVar([]), elementOpacities = {}, serverSessionManagerUrl = 'http://localhost:9000/paraview', serverSessionUrl = '', _baseFileDir = '', scalarBar = new ReactiveVar({
         display: false,
         areDiscreteValues: false,
         labelsAndColors: []
@@ -76,6 +76,8 @@ PV = (function () {
             _viewportCssId = opts.viewportCssId;
         if (opts.backgroundSetting)
             _backgroundSetting = opts.backgroundSetting;
+        if (opts.baseFileDir)
+            _baseFileDir = opts.baseFileDir;
         asyncCallback && asyncCallback(null, { success: true });
     };
     /**
@@ -250,6 +252,7 @@ PV = (function () {
      * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
      */
     var addFile = function addFile(path, asyncCallback) {
+        path = loda.Pather(_baseFileDir).join(path).toString();
         console.log('Starting addFile(), relativeFilePath = ' + path);
         _session.call("pv.proxy.manager.create.reader", [path]).then(function (reply) {
             //console.log('pv.proxy.manager.create.reader() reply = ' + JSON.stringify(reply));
@@ -834,6 +837,11 @@ PV = (function () {
         scalarBar.set(options);
         asyncCallback && asyncCallback(null, { success: true });
     };
+    var setBaseFileDir = function setBaseFileDir(dirPath, asyncCallback) {
+        console.log('dirPath = ', dirPath);
+        _baseFileDir = dirPath;
+        asyncCallback && asyncCallback(null, { success: true });
+    };
     // public API
     return {
         // public member vars
@@ -894,7 +902,8 @@ PV = (function () {
         //rebindViewport: rebindViewport,
         setScalarBar: setScalarBar,
         getRenderer: getRenderer,
-        setRenderer: setRenderer
+        setRenderer: setRenderer,
+        setBaseFileDir: setBaseFileDir
     };
 }());
 //# sourceMappingURL=paraview.js.map

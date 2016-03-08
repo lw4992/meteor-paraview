@@ -17,6 +17,7 @@ PV = (function () {
             elementOpacities = <{[repId: string]: number}> {},
             serverSessionManagerUrl = 'http://localhost:9000/paraview',
             serverSessionUrl = '',
+            _baseFileDir = '',
             scalarBar = new ReactiveVar<iPVScalarBarOpts>({
                 display: false,
                 areDiscreteValues: false,
@@ -103,6 +104,7 @@ PV = (function () {
         if (opts.serverSessionUrl) serverSessionUrl = opts.serverSessionUrl;
         if (opts.viewportCssId) _viewportCssId = opts.viewportCssId;
         if (opts.backgroundSetting) _backgroundSetting = opts.backgroundSetting;
+        if (opts.baseFileDir) _baseFileDir = opts.baseFileDir;
         asyncCallback && asyncCallback(null, {success: true});
     };
 
@@ -295,6 +297,7 @@ PV = (function () {
      * @param {requestCallback} asyncCallback - standard Node-style callback, executed upon completion, has signature `function(error: Object, success: Object)`
      */
     var addFile = function addFile(path, asyncCallback) {
+        path = loda.Pather(_baseFileDir).join(path).toString();
         console.log('Starting addFile(), relativeFilePath = ' + path);
 
         _session.call("pv.proxy.manager.create.reader", [path]).then(function (reply) {
@@ -938,6 +941,12 @@ PV = (function () {
         asyncCallback && asyncCallback(null, {success: true});
     };
 
+    var setBaseFileDir = function setBaseFileDir(dirPath: string, asyncCallback?:iPVCallback) {
+        console.log('dirPath = ', dirPath);
+        _baseFileDir = dirPath;
+        asyncCallback && asyncCallback(null, {success: true});
+    };
+
     // public API
     return {
         // public member vars
@@ -1000,6 +1009,7 @@ PV = (function () {
         //rebindViewport: rebindViewport,
         setScalarBar: setScalarBar,
         getRenderer: getRenderer,
-        setRenderer: setRenderer
+        setRenderer: setRenderer,
+        setBaseFileDir: setBaseFileDir
     }
 }());

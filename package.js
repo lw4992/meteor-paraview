@@ -1,6 +1,6 @@
 Package.describe({
     name: 'fullflavedave:paraview',
-    version: '0.2.2',
+    version: '0.2.3',
     summary: 'A wrapper package for the ParaViewWeb JavaScript API',
     git: 'https://github.com/fullflavedave/meteor-paraview.git',
     documentation: 'README.md'
@@ -18,7 +18,7 @@ Package.onUse(function (api) {
     api.use('raix:handlebar-helpers@0.2.5', 'client');
     api.use('sacha:spin@2.3.1', 'client');
     api.use('mizzao:user-status@0.6.6', ['client', 'server']);
-    api.use('fullflavedave:loda@0.0.9', 'client');
+    api.use('fullflavedave:loda@1.0.2', 'client');
 
     api.addFiles('paraview.js', 'client');
 
